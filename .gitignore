@@ -1,7 +1,9 @@
-.idea
-.gradle
+.idea/
+.gradle/
+.terraform/
+build/
+node_modules/
 .terraform.tfstate.lock.info
-build
 gradle.properties
 terraform.tfstate
 terraform.tfstate.backup
