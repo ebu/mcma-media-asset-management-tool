@@ -4,13 +4,17 @@ import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 import { Query } from "@mcma/data";
 import { McmaResource } from "@mcma/core";
+import { S3Locator } from "@mcma/aws-s3";
+import { MediaAsset } from "@local/model";
 
 const { LogGroupName, TableName } = process.env;
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+const s3 = new AWS.S3({ signatureVersion: "v4" });
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-db-trigger", LogGroupName, new AWS.CloudWatchLogs());
 const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
+
 
 export async function handler(event: DynamoDBStreamEvent, context: Context) {
     console.log(JSON.stringify(event, null, 2));
@@ -25,7 +29,8 @@ export async function handler(event: DynamoDBStreamEvent, context: Context) {
         const messages: any = [];
 
         for (const record of event.Records) {
-            if (record.dynamodb?.Keys?.resource_pkey?.S === "/connections") {
+            if (record.dynamodb?.Keys?.resource_pkey?.S === "/connections" ||
+                record.dynamodb?.Keys?.resource_pkey?.S === "Mutex") {
                 continue;
             }
 
@@ -52,10 +57,16 @@ export async function handler(event: DynamoDBStreamEvent, context: Context) {
 
             const resource = newResource ?? oldResource;
 
-            messages.push({
-                operation,
-                resource
-            });
+            if (resource) {
+                if (resource["@type"] === "MediaAsset") {
+                    signMediaAssetUrls(resource as MediaAsset);
+                }
+
+                messages.push({
+                    operation,
+                    resource
+                });
+            }
         }
 
         logger.info(`Detected ${messages.length} message(s) for sending to websocket clients`);
@@ -116,5 +127,23 @@ export async function handler(event: DynamoDBStreamEvent, context: Context) {
         await loggerProvider.flush(Date.now() + context.getRemainingTimeInMillis() - 5000);
         const t2 = Date.now();
         console.log("LoggerProvider.flush - END   - " + new Date().toISOString() + " - flush took " + (t2 - t1) + " ms");
+    }
+}
+
+function signUrl(url: string): string {
+    const locator = new S3Locator({ url });
+    return s3.getSignedUrl("getObject", {
+        Bucket: locator.bucket,
+        Key: locator.key,
+        Expires: 12 * 3600
+    });
+}
+
+function signMediaAssetUrls(mediaAsset: MediaAsset) {
+    if (mediaAsset.thumbnailUrl) {
+        mediaAsset.thumbnailUrl = signUrl(mediaAsset.thumbnailUrl);
+    }
+    if (mediaAsset.videoUrl) {
+        mediaAsset.videoUrl = signUrl(mediaAsset.videoUrl);
     }
 }

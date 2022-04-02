@@ -98,6 +98,12 @@ resource "aws_iam_role_policy" "db_trigger" {
         Action   = "execute-api:ManageConnections"
         Resource = "${aws_apigatewayv2_api.websocket.execution_arn}/${var.stage_name}/*/*"
       },
+      {
+        Sid      = "AllowReadingMediaBucket"
+        Effect   = "Allow"
+        Action   = "s3:GetObject"
+        Resource = "${var.media_bucket.arn}/*"
+      }
     ],
     var.xray_tracing_enabled ?
     [
@@ -143,4 +149,10 @@ resource "aws_lambda_function" "db_trigger" {
   tracing_config {
     mode = var.xray_tracing_enabled ? "Active" : "PassThrough"
   }
+}
+
+resource "aws_lambda_event_source_mapping" "db_trigger" {
+  event_source_arn  = aws_dynamodb_table.service_table.stream_arn
+  function_name     = aws_lambda_function.db_trigger.arn
+  starting_position = "LATEST"
 }

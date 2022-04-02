@@ -126,7 +126,7 @@ resource "aws_iam_role_policy" "authenticated" {
         Action   = "execute-api:Invoke"
         Resource = [
           "${var.mam_service.aws_apigatewayv2_stage.rest_api.execution_arn}/*/*",
-          "${var.mam_service.aws_apigatewayv2_stage.websocket.execution_arn}/*/*",
+          "${var.mam_service.aws_apigatewayv2_stage.websocket.execution_arn}/*",
         ]
       }
     ]

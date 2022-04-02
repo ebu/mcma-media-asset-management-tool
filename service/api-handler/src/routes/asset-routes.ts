@@ -2,9 +2,9 @@ import { S3 } from "aws-sdk";
 
 import { DefaultRouteCollection } from "@mcma/api";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
+import { S3Locator } from "@mcma/aws-s3";
 
 import { MediaAsset } from "@local/model";
-import { S3Locator } from "@mcma/aws-s3";
 
 function signUrl(url: string, s3: S3): string {
     const locator = new S3Locator({ url });
@@ -20,7 +20,7 @@ function signMediaAssetUrls(mediaAsset: MediaAsset, s3: S3) {
         mediaAsset.thumbnailUrl = signUrl(mediaAsset.thumbnailUrl, s3);
     }
     if (mediaAsset.videoUrl) {
-        mediaAsset.videoUrl = signUrl(mediaAsset.thumbnailUrl, s3);
+        mediaAsset.videoUrl = signUrl(mediaAsset.videoUrl, s3);
     }
 }
 
