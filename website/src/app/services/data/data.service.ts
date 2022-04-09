@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, zip } from "rxjs";
 import { filter, map, retry, share, switchMap, tap } from "rxjs/operators";
@@ -16,7 +16,7 @@ import { DataOperation, DataUpdate } from "./data-update";
 @Injectable({
   providedIn: "root"
 })
-export class DataService implements OnInit {
+export class DataService {
   private websocket$: Observable<any>;
 
   constructor(private http: HttpClient,
@@ -46,12 +46,9 @@ export class DataService implements OnInit {
       retry(),
       map(obj => obj as DataUpdate<McmaResource>),
       filter(dataUpdate => dataUpdate.operation === DataOperation.Insert || dataUpdate.operation === DataOperation.Update || dataUpdate.operation === DataOperation.Delete),
+      tap(dataUpdate => this.logger.info(dataUpdate)),
       share(),
     );
-  }
-
-  ngOnInit(): void {
-
   }
 
   private getRestApiUrl() {
@@ -64,9 +61,19 @@ export class DataService implements OnInit {
     );
   }
 
-  listWorkflows() {
+  listMediaWorkflows(pageSize: number, pageStartToken?: string) {
+    const params: any = {
+      sortBy: "dateCreated",
+      sortOrder: "desc",
+      pageSize: pageSize,
+    };
+    if (pageStartToken) {
+      params.pageStartToken = pageStartToken;
+    }
     return this.getRestApiUrl().pipe(
-      switchMap(url => this.http.get<QueryResults<MediaWorkflow>>(`${url}/workflows`))
+      switchMap(url => this.http.get<QueryResults<MediaWorkflow>>(`${url}/workflows`, {
+        params: params
+      }))
     );
   }
 
@@ -86,9 +93,14 @@ export class DataService implements OnInit {
     );
   }
 
+  getMediaWorkflowUpdates(): Observable<DataUpdate<MediaWorkflow>> {
+    return this.websocket$.pipe(
+      filter(obj => obj.resource && obj.resource["@type"] === "MediaWorkflow"),
+    );
+  }
+
   getMediaAssetUpdates(): Observable<DataUpdate<MediaAsset>> {
     return this.websocket$.pipe(
-      tap(x => this.logger.info(x)),
       filter(obj => obj.resource && obj.resource["@type"] === "MediaAsset"),
     );
   }

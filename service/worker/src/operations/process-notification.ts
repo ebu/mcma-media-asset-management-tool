@@ -4,6 +4,8 @@ import { Notification } from "@mcma/core";
 import { MediaWorkflowProperties } from "@local/model";
 import { DataController } from "@local/data";
 
+const { AWS_REGION } = process.env;
+
 export async function processNotification(providers: ProviderCollection, workerRequest: WorkerRequest, context: { requestId: string, dataController: DataController }) {
     const logger = workerRequest.logger;
     const dataController = context.dataController;
@@ -16,6 +18,10 @@ export async function processNotification(providers: ProviderCollection, workerR
 
     mediaWorkflow.status = workflowJob.status;
     mediaWorkflow.error = workflowJob.error;
+    if (workflowJob.jobOutput && workflowJob.jobOutput["executionArn"]) {
+        const executionArn = workflowJob.jobOutput["executionArn"];
+        mediaWorkflow.detailUrl = `https://${AWS_REGION}.console.aws.amazon.com/states/home?region=${AWS_REGION}#/executions/details/${executionArn}`
+    }
 
     dataController.put(mediaWorkflow.id, mediaWorkflow);
     logger.info(`Updated media workflow ${mediaWorkflowDatabaseId}`);

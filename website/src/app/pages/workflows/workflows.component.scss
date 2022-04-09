@@ -1,0 +1,50 @@
+.container {
+  position: relative;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 56px;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+table {
+  width: 100%;
+}
+
+img {
+  display: block;
+}
+
+.mat-column-asset {
+  padding: 0;
+}
+
+.mat-column-workflow {
+  padding: 0;
+  width: 200px;
+}
+
+.mat-column-status {
+  padding: 0;
+  width: 120px;
+}
+.mat-column-created-date {
+  padding: 0;
+  width: 180px;
+}
+
+.isDisabled {
+  color: currentColor;
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+  text-decoration: none;
+}

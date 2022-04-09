@@ -8,7 +8,6 @@ locals {
 
 resource "aws_s3_bucket" "website" {
   bucket        = local.website_bucket_name
-  acl           = "private"
   force_destroy = true
 
   policy = jsonencode({
@@ -60,11 +59,25 @@ resource "aws_s3_bucket" "website" {
     ]
   })
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
+  lifecycle {
+    ignore_changes = [
+      acl,
+      server_side_encryption_configuration,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_acl" "website" {
+  bucket = aws_s3_bucket.website.id
+  acl = "private"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
+  bucket = aws_s3_bucket.website.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
     }
   }
 }

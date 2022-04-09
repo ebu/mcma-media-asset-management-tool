@@ -11,8 +11,10 @@ export interface MediaWorkflowProperties extends McmaResourceProperties {
     status?: JobStatus;
     error?: ProblemDetailProperties;
     mediaAssetId?: string;
+    mediaAssetTitle?: string;
     mediaAssetWorkflowId?: string;
     workflowJobId?: string;
+    detailUrl?: string;
 }
 
 export class MediaWorkflow extends McmaResource implements MediaWorkflowProperties {
@@ -21,8 +23,10 @@ export class MediaWorkflow extends McmaResource implements MediaWorkflowProperti
     status: JobStatus;
     error?: ProblemDetail;
     mediaAssetId?: string;
+    mediaAssetTitle?: string;
     mediaAssetWorkflowId?: string;
     workflowJobId?: string;
+    detailUrl?: string;
 
     constructor(properties: MediaWorkflowProperties) {
         super("MediaWorkflow", properties);
@@ -32,8 +36,10 @@ export class MediaWorkflow extends McmaResource implements MediaWorkflowProperti
         this.checkProperty("status", "string", false);
         this.checkProperty("error", "object", false);
         this.checkProperty("mediaAssetId", "url", false);
+        this.checkProperty("mediaAssetTitle", "string", false);
         this.checkProperty("mediaAssetWorkflowId", "url", false);
         this.checkProperty("workflowJobId", "url", false);
+        this.checkProperty("detailUrl", "url", false);
 
         if (!this.status) {
             this.status = JobStatus.New;

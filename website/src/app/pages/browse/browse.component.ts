@@ -3,7 +3,7 @@ import { Router } from "@angular/router";
 import { MatPaginator, PageEvent } from "@angular/material/paginator";
 import { of, Subscription, zip } from "rxjs";
 import { map, startWith, switchMap } from "rxjs/operators";
-import { MediaAssetProperties } from "@local/model";
+import { MediaAsset } from "@local/model";
 
 import { DataService } from "../../services/data";
 import { LoggerService } from "../../services";
@@ -19,7 +19,7 @@ const PageSize = 10;
 })
 export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
   displayedColumns: string[] = ["thumbnail", "title", "description"];
-  mediaAssets: MediaAssetProperties[] = [];
+  mediaAssets: MediaAsset[] = [];
 
   resultsLength = 0;
   nextPageTokens: string[] = [];
@@ -97,7 +97,7 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
     this.paginatorSubscription?.unsubscribe();
   }
 
-  openAsset(mediaAsset: MediaAssetProperties) {
+  openAsset(mediaAsset: MediaAsset) {
     this.logger.info(mediaAsset);
 
     const assetGuid = mediaAsset.id!.substring(mediaAsset.id!.lastIndexOf("/") + 1);

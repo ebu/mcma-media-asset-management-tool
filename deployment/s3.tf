@@ -8,9 +8,7 @@ locals {
 
 resource "aws_s3_bucket" "media" {
   bucket              = local.media_bucket_name
-  acl                 = "private"
   force_destroy       = true
-  acceleration_status = "Enabled"
 
   policy = jsonencode({
     Version   = "2012-10-17"
@@ -48,32 +46,67 @@ resource "aws_s3_bucket" "media" {
     ]
   })
 
+  lifecycle {
+    ignore_changes = [
+      acceleration_status,
+      acl,
+      cors_rule,
+      lifecycle_rule,
+      server_side_encryption_configuration,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_acl" "media" {
+  bucket = aws_s3_bucket.media.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_accelerate_configuration" "media" {
+  bucket = aws_s3_bucket.media.id
+  status = "Enabled"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "media" {
+  bucket = aws_s3_bucket.media.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "media" {
+  bucket = aws_s3_bucket.media.id
+
+  rule {
+    id     = "Delete user uploaded unprocessed files after 7 days"
+    status = "Enabled"
+
+    filter {
+      prefix = "${var.aws_region}:"
+    }
+
+    expiration {
+      days = 7
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 1
+    }
+  }
+}
+
+resource "aws_s3_bucket_cors_configuration" "media" {
+  bucket = aws_s3_bucket.media.id
+
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET", "PUT", "POST", "DELETE"]
     allowed_origins = ["*"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3600
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
-  lifecycle_rule {
-    id      = "Delete user uploaded unprocessed files after 7 days"
-    enabled = true
-    prefix  = "${var.aws_region}:"
-
-    abort_incomplete_multipart_upload_days = 1
-
-    expiration {
-      days = 7
-    }
   }
 }
 
