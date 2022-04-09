@@ -1,3 +1,9 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .toolbar-spacer {
   flex: 1 1 auto;
 }
@@ -14,6 +20,8 @@
 .sidenav-container {
   position: fixed;
   height: 100%;
+  top: 64px;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .sidenav {
@@ -22,7 +30,10 @@
 
 .sidenav-content {
   margin-left: 140px;
-  padding: 2em 2em 2em 2em
+  padding: 2em 2em 2em 2em;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .full-width {

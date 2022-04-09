@@ -13,11 +13,11 @@ import { S3Locator } from "@mcma/aws-s3";
 import { zip } from "rxjs";
 
 @Component({
-  selector: "app-add-asset",
-  templateUrl: "./add-asset.component.html",
-  styleUrls: ["./add-asset.component.scss"]
+  selector: "app-asset-add",
+  templateUrl: "./asset-add.component.html",
+  styleUrls: ["./asset-add.component.scss"]
 })
-export class AddAssetComponent implements OnInit {
+export class AssetAddComponent implements OnInit {
   public form: FormGroup;
 
   constructor(

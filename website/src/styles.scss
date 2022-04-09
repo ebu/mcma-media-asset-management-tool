@@ -1,6 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
 
+html, body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.mat-tab-body-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border: 1px solid #eeeeee;
 }

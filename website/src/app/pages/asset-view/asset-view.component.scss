@@ -1,0 +1,53 @@
+@import "../../../variables.scss";
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-bottom: 1em;
+}
+
+.top-container {
+  display: flex;
+}
+
+.metadata {
+  flex:1;
+}
+
+.video-player {
+  width: 640px;
+  height: 360px;
+}
+
+.center-container{
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.bottom-container {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.left-button-container {
+  display:flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1em;
+}
+
+.right-button-container {
+
+}
+

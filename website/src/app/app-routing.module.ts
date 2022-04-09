@@ -2,12 +2,12 @@ import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
 import { ForgotPasswordComponent, LoginComponent, NewPasswordChallengeComponent } from "./auth";
 import { CognitoAuthGuard } from "./guards";
-import { AddAssetComponent } from "./pages/add-asset/add-asset.component";
+import { AssetAddComponent } from "./pages/asset-add/asset-add.component";
 import { WorkflowsComponent } from "./pages/workflows/workflows.component";
 import { SettingsComponent } from "./pages/settings/settings.component";
 import { BrowseComponent } from "./pages/browse/browse.component";
 import { HomeComponent } from "./pages/home/home.component";
-import { AssetComponent } from "./pages/asset/asset.component";
+import { AssetViewComponent } from "./pages/asset-view/asset-view.component";
 
 const routes: Routes = [
   { path: "login", component: LoginComponent, canActivate: [CognitoAuthGuard] },
@@ -17,12 +17,12 @@ const routes: Routes = [
     path: "", component: HomeComponent, canActivate: [CognitoAuthGuard],
     children: [
       { path: "assets", component: BrowseComponent, canActivate: [CognitoAuthGuard] },
-      { path: "assets/add", component: AddAssetComponent, canActivate: [CognitoAuthGuard] },
-      { path: "assets/:id", component: AssetComponent, canActivate: [CognitoAuthGuard] },
+      { path: "assets/add", component: AssetAddComponent, canActivate: [CognitoAuthGuard] },
+      { path: "assets/:guid", component: AssetViewComponent, canActivate: [CognitoAuthGuard] },
       { path: "workflows", component: WorkflowsComponent, canActivate: [CognitoAuthGuard] },
       { path: "settings", component: SettingsComponent, canActivate: [CognitoAuthGuard] },
 
-      { path: "**", redirectTo: "workflows" }
+      { path: "**", redirectTo: "assets/3e178a9e-8856-4656-80ff-014bca1818a7" }
     ]
   },
 ];

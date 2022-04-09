@@ -1,0 +1,16 @@
+.container {
+  height: 100%;
+  width: 100%;
+  flex-direction: row;
+  display: flex;
+}
+
+.left-column {
+  border-right: 1px solid #eeeeee;
+  width: 480px;
+}
+
+.right-column{
+  display: flex;
+  flex: 1;
+}

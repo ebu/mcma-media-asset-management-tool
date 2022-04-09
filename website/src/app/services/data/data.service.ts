@@ -6,7 +6,7 @@ import { webSocket } from "rxjs/webSocket";
 import { McmaResource } from "@mcma/core";
 import { QueryResults } from "@mcma/data";
 import { AwsV4PresignedUrlGenerator } from "@mcma/aws-client";
-import { MediaAsset, MediaWorkflow } from "@local/model";
+import { MediaAsset, MediaEssence, MediaWorkflow } from "@local/model";
 
 import { ConfigService } from "../config";
 import { CognitoAuthService } from "../cognito-auth";
@@ -102,6 +102,18 @@ export class DataService {
   getMediaAssetUpdates(): Observable<DataUpdate<MediaAsset>> {
     return this.websocket$.pipe(
       filter(obj => obj.resource && obj.resource["@type"] === "MediaAsset"),
+    );
+  }
+
+  getMediaAsset(guid: string): Observable<MediaAsset> {
+    return this.getRestApiUrl().pipe(
+      switchMap(url => this.http.get<MediaAsset>(`${url}/assets/${guid}`))
+    );
+  }
+
+  getMediaAssetEssences(guid: string): Observable<QueryResults<MediaEssence>> {
+    return this.getRestApiUrl().pipe(
+      switchMap(url => this.http.get<QueryResults<MediaEssence>>(`${url}/assets/${guid}/essences`))
     );
   }
 }

@@ -8,23 +8,27 @@ import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { MaterialModule } from "./vendor";
 import { BrowseComponent } from "./pages/browse/browse.component";
-import { AddAssetComponent } from "./pages/add-asset/add-asset.component";
+import { AssetAddComponent } from "./pages/asset-add/asset-add.component";
 import { WorkflowsComponent } from "./pages/workflows/workflows.component";
 import { SettingsComponent } from "./pages/settings/settings.component";
 import { HomeComponent } from "./pages/home/home.component";
 import { DialogsModule } from "./dialogs/dialogs.module";
 import { httpInterceptorProviders } from "./http-interceptors";
-import { AssetComponent } from './pages/asset/asset.component';
+import { AssetViewComponent } from './pages/asset-view/asset-view.component';
+import { AssetFilesComponent } from './components/asset-files/asset-files.component';
+import { AssetWorkflowsComponent } from './components/asset-workflows/asset-workflows.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BrowseComponent,
-    AddAssetComponent,
+    AssetAddComponent,
     WorkflowsComponent,
     SettingsComponent,
     HomeComponent,
-    AssetComponent,
+    AssetViewComponent,
+    AssetFilesComponent,
+    AssetWorkflowsComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -33,7 +37,7 @@ import { AssetComponent } from './pages/asset/asset.component';
     DialogsModule,
     HttpClientModule,
     MaterialModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [
     httpInterceptorProviders

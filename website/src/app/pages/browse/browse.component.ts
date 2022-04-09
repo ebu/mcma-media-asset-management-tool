@@ -98,8 +98,6 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
   }
 
   openAsset(mediaAsset: MediaAsset) {
-    this.logger.info(mediaAsset);
-
     const assetGuid = mediaAsset.id!.substring(mediaAsset.id!.lastIndexOf("/") + 1);
 
     this.router.navigate([`assets/${assetGuid}`]);

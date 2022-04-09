@@ -1,0 +1,33 @@
+<div class="page-container">
+  <div class="top-container">
+    <div class="metadata">
+      <h1>Asset View</h1>
+      <p>Title: {{asset?.title}}</p>
+      <p>Description: {{asset?.description}}</p>
+      <p>Date created: {{asset?.dateCreated | date : "medium"}}</p>
+    </div>
+    <video class="video-player"
+           controls
+           src="{{asset?.videoUrl}}">
+    </video>
+  </div>
+  <mat-tab-group class="center-container"
+                 animationDuration="0ms">
+    <mat-tab label="Files">
+      <app-asset-files></app-asset-files>
+    </mat-tab>
+    <mat-tab label="Workflows">
+      <app-asset-workflows></app-asset-workflows>
+    </mat-tab>
+  </mat-tab-group>
+  <div class="bottom-container">
+    <div class="left-button-container">
+      <button mat-raised-button color="primary">Run Workflow</button>
+      <button mat-raised-button color="primary">Duplicate</button>
+      <button mat-raised-button color="warn">Delete</button>
+    </div>
+    <div class="right-button-container">
+      <button mat-raised-button color="primary" routerLink="/assets">Back</button>
+    </div>
+  </div>
+</div>

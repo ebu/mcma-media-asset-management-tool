@@ -1,3 +1,4 @@
+<h1>Workflows</h1>
 <div class="container">
   <div class="loading-shade"
        *ngIf="isLoadingResults">
@@ -9,7 +10,7 @@
     <ng-container matColumnDef="asset">
       <th mat-header-cell *matHeaderCellDef>Asset</th>
       <td mat-cell *matCellDef="let workflow"><a
-        routerLink="/assets/{{workflow.mediaAssetId?.substring(workflow.mediaAssetId?.lastIndexOf('/') + 1)}}">{{workflow.mediaAssetTitle ?? "Missing Title"}}</a>
+        routerLink="/assets/{{workflow.mediaAssetId?.substring(workflow.mediaAssetId?.lastIndexOf('/') + 1)}}" [ngClass]="{'isDisabled':!workflow.mediaAssetId}">{{workflow.mediaAssetTitle ?? "Missing Title"}}</a>
       </td>
     </ng-container>
 
