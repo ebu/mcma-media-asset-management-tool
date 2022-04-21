@@ -7,7 +7,8 @@ import { Subscription } from "rxjs";
 import { map, switchMap } from "rxjs/operators";
 
 import { DataService, LoggerService } from "../../services";
-import { MediaEssence, VideoEssence, ImageEssence, AudioEssence } from "@local/model";
+import { AudioEssence, ImageEssence, MediaEssence, VideoEssence } from "@local/model";
+import { DataOperation } from "../../services/data/data-update";
 
 @Component({
   selector: "app-asset-files",
@@ -15,6 +16,7 @@ import { MediaEssence, VideoEssence, ImageEssence, AudioEssence } from "@local/m
   styleUrls: ["./asset-files.component.scss"]
 })
 export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
+  guid: string | undefined;
   mediaEssences: MediaEssence[] = [];
   selectedMediaEssence: MediaEssence | undefined;
 
@@ -35,11 +37,49 @@ export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.dataUpdateSubscription = this.data.getMediaEssenceUpdates().subscribe(dataUpdate => {
+      const mediaEssence = dataUpdate.resource;
+
+      if (!this.guid || !mediaEssence?.id?.includes(this.guid)) {
+        return;
+      }
+
+      switch (dataUpdate.operation) {
+        case DataOperation.Insert:
+          this.mediaEssences = [mediaEssence, ...this.mediaEssences];
+          if (!this.selectedMediaEssence) {
+            this.selectedMediaEssence = this.mediaEssences[0];
+          }
+          break;
+        case DataOperation.Update:
+          if (this.selectedMediaEssence?.id === mediaEssence.id) {
+            this.selectedMediaEssence = mediaEssence;
+          }
+          for (let i = 0; i < this.mediaEssences.length; i++) {
+            if (mediaEssence.id === this.mediaEssences[i].id) {
+              this.mediaEssences[i] = mediaEssence;
+              this.mediaEssences = [...this.mediaEssences];
+              break;
+            }
+          }
+          break;
+        case DataOperation.Delete:
+          for (let i = this.mediaEssences.length - 1; i >= 0; i--) {
+            if (this.mediaEssences[i].id === dataUpdate.resource.id) {
+              this.mediaEssences.splice(i, 1);
+              this.mediaEssences = [...this.mediaEssences];
+              break;
+            }
+          }
+          break;
+      }
+    });
+
     this.routeSubscription = this.route.params.pipe(
-      map(params => params["guid"]),
+      map(params => this.guid = params["guid"]),
       switchMap(guid => this.data.getMediaAssetEssences(guid))
     ).subscribe(essences => {
-      this.logger.info(essences);
+      // this.logger.info(essences);
       this.mediaEssences = essences.results;
 
       this.selectedMediaEssence = this.mediaEssences[0];
@@ -58,12 +98,12 @@ export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
   buildEssenceName(mediaEssence: MediaEssence): string {
     let str = mediaEssence.filename;
     if (mediaEssence.tags?.length) {
-      str += ` (${mediaEssence.tags.join(", ")})`
+      str += ` (${mediaEssence.tags.join(", ")})`;
     }
     return str ?? "";
   }
 
-  onEssenceSelectionChange(event: MatSelectionListChange){
+  onEssenceSelectionChange(event: MatSelectionListChange) {
     this.selectedMediaEssence = event.options[0].value;
   }
 
