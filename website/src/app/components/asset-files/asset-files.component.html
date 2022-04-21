@@ -1,8 +1,134 @@
+<div class="loading-shade"
+     *ngIf="isLoadingResults">
+  <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+</div>
+
 <div class="container">
   <div class="left-column">
-    Left Column
+    <div class="list-container">
+      <div class="list-content">
+        <mat-selection-list [multiple]="false" (selectionChange)="onEssenceSelectionChange($event)">
+          <mat-list-option *ngFor="let essence of mediaEssences" [value]="essence" [selected]="this.selectedMediaEssence === essence">
+            {{buildEssenceName(essence)}}
+          </mat-list-option>
+        </mat-selection-list>
+      </div>
+    </div>
   </div>
   <div class="right-column">
-    Right Column
+    <div class="detail-container">
+      <div class="detail">
+        <div class="section">
+          <h2>Details:</h2>
+
+          <table>
+            <tr>
+              <td>Type:</td>
+              <td>{{selectedMediaEssence?.["@type"]}}</td>
+            </tr>
+            <tr>
+              <td>File size:</td>
+              <td>{{selectedMediaEssence?.size | filesize}}</td>
+            </tr>
+            <tr *ngIf="selectedMediaEssence?.duration">
+              <td>Duration:</td>
+              <td>{{selectedMediaEssence?.duration | duration}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div *ngIf="(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata" class="section">
+          <h2>Video Technical Metadata</h2>
+          <table>
+            <tr>
+              <td>Codec:</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.codec}}</td>
+            </tr>
+            <tr>
+              <td>Resolution:</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.width}}
+                x {{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.height}}</td>
+            </tr>
+            <tr>
+              <td>Framerate:</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.frameRate}}</td>
+            </tr>
+            <tr>
+              <td>Aspect Ratio:</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.aspectRatio}}</td>
+            </tr>
+            <tr>
+              <td>Bit Rate:</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.bitRate}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div *ngIf="(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata" class="section">
+          <h2>Audio Technical Metadata</h2>
+          <table>
+            <tr>
+              <td>Codec:</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.codec}}</td>
+            </tr>
+            <tr>
+              <td>Channels:</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.channels}}</td>
+            </tr>
+            <tr>
+              <td>Sampling Rate:</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.samplingRate}}</td>
+            </tr>
+            <tr>
+              <td>Bit Rate:</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.bitRate}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div *ngIf="(selectedMediaEssence | as : ImageEssence)?.imageTechnicalMetadata" class="section">
+          <h2>Image Technical Metadata</h2>
+          <table>
+            <tr>
+              <td>Codec:</td>
+              <td>{{(selectedMediaEssence | as : ImageEssence)?.imageTechnicalMetadata?.codec}}</td>
+            </tr>
+            <tr>
+              <td>Image size:</td>
+              <td>{{(selectedMediaEssence | as : ImageEssence)?.imageTechnicalMetadata?.width}}
+                x {{(selectedMediaEssence | as : ImageEssence)?.imageTechnicalMetadata?.height}}</td>
+            </tr>
+            <tr>
+              <td>Aspect Ratio:</td>
+              <td>{{(selectedMediaEssence | as : ImageEssence)?.imageTechnicalMetadata?.aspectRatio}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="section">
+          <h2>Locations:</h2>
+
+          <div *ngFor="let locator of selectedMediaEssence?.locators">
+            <div *ngIf="locator['@type'] === 'S3Locator'">
+              <b>S3</b>
+              <table>
+                <tr>
+                  <td>Bucket:</td>
+                  <td>{{(locator | as : S3Locator).bucket}}</td>
+                </tr>
+                <tr>
+                  <td>Region:</td>
+                  <td>{{(locator | as : S3Locator).region}}</td>
+                </tr>
+                <tr>
+                  <td>Key:</td>
+                  <td><a href="{{locator.url}}" target="_blank">{{(locator | as : S3Locator).key}}</a></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -18,7 +18,7 @@ const workerInvoker = new LambdaWorkerInvoker(new AWS.Lambda());
 
 const routes = new McmaApiRouteCollection();
 routes.addRoutes(buildAssetRoutes(dbTableProvider, s3));
-routes.addRoutes(buildAssetEssenceRoutes(dbTableProvider));
+routes.addRoutes(buildAssetEssenceRoutes(dbTableProvider, s3));
 routes.addRoutes(buildAssetWorkflowRoutes(dbTableProvider));
 routes.addRoutes(buildWorkflowRoutes(dbTableProvider, workerInvoker));
 

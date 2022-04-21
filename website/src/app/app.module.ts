@@ -17,6 +17,7 @@ import { httpInterceptorProviders } from "./http-interceptors";
 import { AssetViewComponent } from './pages/asset-view/asset-view.component';
 import { AssetFilesComponent } from './components/asset-files/asset-files.component';
 import { AssetWorkflowsComponent } from './components/asset-workflows/asset-workflows.component';
+import { AsModule, DurationModule, FilesizeModule } from "./pipes";
 
 @NgModule({
   declarations: [
@@ -38,6 +39,9 @@ import { AssetWorkflowsComponent } from './components/asset-workflows/asset-work
     HttpClientModule,
     MaterialModule,
     ReactiveFormsModule,
+    AsModule,
+    DurationModule,
+    FilesizeModule,
   ],
   providers: [
     httpInterceptorProviders

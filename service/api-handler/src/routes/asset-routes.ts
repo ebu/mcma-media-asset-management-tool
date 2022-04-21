@@ -2,18 +2,9 @@ import { S3 } from "aws-sdk";
 
 import { DefaultRouteCollection } from "@mcma/api";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
-import { S3Locator } from "@mcma/aws-s3";
 
 import { MediaAsset } from "@local/model";
-
-function signUrl(url: string, s3: S3): string {
-    const locator = new S3Locator({ url });
-    return s3.getSignedUrl("getObject", {
-        Bucket: locator.bucket,
-        Key: locator.key,
-        Expires: 12 * 3600
-    });
-}
+import { signUrl } from "./utils";
 
 function signMediaAssetUrls(mediaAsset: MediaAsset, s3: S3) {
     if (mediaAsset.thumbnailUrl) {

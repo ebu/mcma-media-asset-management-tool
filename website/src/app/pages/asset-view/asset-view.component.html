@@ -2,9 +2,20 @@
   <div class="top-container">
     <div class="metadata">
       <h1>Asset View</h1>
-      <p>Title: {{asset?.title}}</p>
-      <p>Description: {{asset?.description}}</p>
-      <p>Date created: {{asset?.dateCreated | date : "medium"}}</p>
+      <table>
+        <tr>
+          <td>Title:</td>
+          <td>{{asset?.title}}</td>
+        </tr>
+        <tr>
+          <td>Description:</td>
+          <td>{{asset?.description}}</td>
+        </tr>
+        <tr>
+          <td>Date created:</td>
+          <td>{{asset?.dateCreated | date : "medium"}}</td>
+        </tr>
+      </table>
     </div>
     <video class="video-player"
            controls
