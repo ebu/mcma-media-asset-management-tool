@@ -7,7 +7,7 @@ import { DataOperation } from "../../services/data/data-update";
 import { map, startWith, switchMap } from "rxjs/operators";
 import { MediaWorkflow } from "@local/model";
 
-const PageSize = 10;
+const PageSize = 15;
 
 @Component({
   selector: "app-workflows",

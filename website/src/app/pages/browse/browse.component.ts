@@ -10,7 +10,7 @@ import { LoggerService } from "../../services";
 import { DataOperation } from "../../services/data/data-update";
 
 
-const PageSize = 10;
+const PageSize = 8;
 
 @Component({
   selector: "app-browse",
@@ -18,7 +18,7 @@ const PageSize = 10;
   styleUrls: ["./browse.component.scss"]
 })
 export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
-  displayedColumns: string[] = ["thumbnail", "title", "description"];
+  displayedColumns: string[] = ["thumbnail", "title", "description", "created-date"];
   mediaAssets: MediaAsset[] = [];
 
   resultsLength = 0;
