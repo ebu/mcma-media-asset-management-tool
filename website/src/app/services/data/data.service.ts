@@ -104,6 +104,10 @@ export class DataService {
     );
   }
 
+  deleteMediaAsset(assetId: string): Observable<void> {
+    return this.http.delete<void>(assetId);
+  }
+
   getMediaAssetEssences(guid: string): Observable<QueryResults<MediaEssence>> {
     return this.getRestApiUrl().pipe(
       switchMap(url => this.http.get<QueryResults<MediaEssence>>(`${url}/assets/${guid}/essences`))

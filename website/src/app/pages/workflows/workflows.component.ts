@@ -7,7 +7,6 @@ import { DataOperation } from "../../services/data/data-update";
 import { map, startWith, switchMap } from "rxjs/operators";
 import { MediaWorkflow } from "@local/model";
 
-const PageSize = 15;
 
 @Component({
   selector: "app-workflows",
@@ -15,6 +14,8 @@ const PageSize = 15;
   styleUrls: ["./workflows.component.scss"]
 })
 export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
+  readonly PageSize = 15;
+
   displayedColumns: string[] = ["asset", "workflow", "status", "created-date"];
   mediaWorkflows: MediaWorkflow[] = [];
 
@@ -38,7 +39,7 @@ export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDe
         case DataOperation.Insert:
           if (this.paginator!.pageIndex === 0) {
             this.mediaWorkflows.unshift(dataUpdate.resource);
-            if (this.mediaWorkflows.length > PageSize) {
+            if (this.mediaWorkflows.length > this.PageSize) {
               this.mediaWorkflows.pop();
             }
             this.mediaWorkflows = [...this.mediaWorkflows];
@@ -66,10 +67,10 @@ export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDe
     });
 
     this.paginatorSubscription = this.paginator!.page.pipe(
-      startWith({ pageIndex: 0, pageSize: PageSize, length: 0 }),
+      startWith({ pageIndex: 0, pageSize: this.PageSize, length: 0 }),
       switchMap((event: PageEvent) => {
         this.isLoadingResults = true;
-        return zip(of(event), this.data.listMediaWorkflows(PageSize, this.nextPageTokens[event.pageIndex]));
+        return zip(of(event), this.data.listMediaWorkflows(this.PageSize, this.nextPageTokens[event.pageIndex]));
       }),
       map(([event, queryResults]) => {
         this.isLoadingResults = false;
@@ -78,7 +79,7 @@ export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDe
           this.nextPageTokens[event.pageIndex + 1] = queryResults.nextPageStartToken;
         }
 
-        this.resultsLength = this.nextPageTokens.length * PageSize;
+        this.resultsLength = this.nextPageTokens.length * this.PageSize;
         return queryResults.results;
       })
     ).subscribe(mediaWorkflows => this.mediaWorkflows = mediaWorkflows);

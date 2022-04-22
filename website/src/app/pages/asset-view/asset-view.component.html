@@ -1,12 +1,8 @@
 <div class="page-container">
   <div class="top-container">
     <div class="metadata">
-      <h1>Asset View</h1>
+      <h1>{{asset?.title}}</h1>
       <table>
-        <tr>
-          <td>Title:</td>
-          <td>{{asset?.title}}</td>
-        </tr>
         <tr>
           <td>Description:</td>
           <td>{{asset?.description}}</td>
@@ -34,8 +30,7 @@
   <div class="bottom-container">
     <div class="left-button-container">
       <button mat-raised-button color="primary">Run Workflow</button>
-      <button mat-raised-button color="primary">Duplicate</button>
-      <button mat-raised-button color="warn">Delete</button>
+      <button mat-raised-button color="warn" (click)="openDialogAssetDelete()">Delete</button>
     </div>
     <div class="right-button-container">
       <button mat-raised-button color="primary" routerLink="/assets">Back</button>

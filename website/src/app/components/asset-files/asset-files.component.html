@@ -18,7 +18,7 @@
   <div class="right-column">
     <div class="detail-container">
       <div class="detail">
-        <div class="section">
+        <div *ngIf="this.selectedMediaEssence" class="section">
           <h2>Details:</h2>
 
           <table>
@@ -105,7 +105,7 @@
           </table>
         </div>
 
-        <div class="section">
+        <div *ngIf="selectedMediaEssence?.locators?.length" class="section">
           <h2>Locations:</h2>
 
           <div *ngFor="let locator of selectedMediaEssence?.locators">

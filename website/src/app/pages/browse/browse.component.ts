@@ -9,15 +9,14 @@ import { DataService } from "../../services/data";
 import { LoggerService } from "../../services";
 import { DataOperation } from "../../services/data/data-update";
 
-
-const PageSize = 8;
-
 @Component({
   selector: "app-browse",
   templateUrl: "./browse.component.html",
   styleUrls: ["./browse.component.scss"]
 })
 export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestroy {
+  readonly PageSize = 8;
+
   displayedColumns: string[] = ["thumbnail", "title", "description", "created-date"];
   mediaAssets: MediaAsset[] = [];
 
@@ -41,7 +40,7 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
         case DataOperation.Insert:
           if (this.paginator!.pageIndex === 0) {
             this.mediaAssets.unshift(dataUpdate.resource);
-            if (this.mediaAssets.length > PageSize) {
+            if (this.mediaAssets.length > this.PageSize) {
               this.mediaAssets.pop();
             }
             this.mediaAssets = [...this.mediaAssets];
@@ -69,10 +68,10 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
     });
 
     this.paginatorSubscription = this.paginator!.page.pipe(
-      startWith({ pageIndex: 0, pageSize: PageSize, length: 0 }),
+      startWith({ pageIndex: 0, pageSize: this.PageSize, length: 0 }),
       switchMap((event: PageEvent) => {
         this.isLoadingResults = true;
-        return zip(of(event), this.data.listMediaAssets(PageSize, this.nextPageTokens[event.pageIndex]));
+        return zip(of(event), this.data.listMediaAssets(this.PageSize, this.nextPageTokens[event.pageIndex]));
       }),
       map(([event, queryResults]) => {
         this.isLoadingResults = false;
@@ -81,7 +80,7 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
           this.nextPageTokens[event.pageIndex + 1] = queryResults.nextPageStartToken;
         }
 
-        this.resultsLength = this.nextPageTokens.length * PageSize;
+        this.resultsLength = this.nextPageTokens.length * this.PageSize;
         return queryResults.results;
       })
     ).subscribe(mediaAssets => this.mediaAssets = mediaAssets);

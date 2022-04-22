@@ -6,6 +6,8 @@ import { DataService } from "../../services";
 
 import { MediaAsset } from "@local/model";
 import { DataOperation } from "../../services/data/data-update";
+import { MatDialog } from "@angular/material/dialog";
+import { DialogAssetDeleteComponent } from "../../dialogs/dialog-asset-delete/dialog-asset-delete.component";
 
 @Component({
   selector: "app-asset-view",
@@ -23,6 +25,7 @@ export class AssetViewComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private data: DataService,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -55,5 +58,11 @@ export class AssetViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.routeSubscription?.unsubscribe();
     this.dataUpdateSubscription?.unsubscribe();
   };
+
+  openDialogAssetDelete() {
+    if (this.asset) {
+      DialogAssetDeleteComponent.createDialog(this.dialog, this.asset);
+    }
+  }
 
 }

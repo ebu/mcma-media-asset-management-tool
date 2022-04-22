@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatSelectionListChange } from "@angular/material/list";
 
 import { S3Locator } from "@mcma/aws-s3";
@@ -15,8 +15,8 @@ import { DataOperation } from "../../services/data/data-update";
   templateUrl: "./asset-files.component.html",
   styleUrls: ["./asset-files.component.scss"]
 })
-export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
-  guid: string | undefined;
+export class AssetFilesComponent implements OnInit, OnDestroy {
+  assetGuid: string | undefined;
   mediaEssences: MediaEssence[] = [];
   selectedMediaEssence: MediaEssence | undefined;
 
@@ -40,7 +40,7 @@ export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataUpdateSubscription = this.data.getMediaEssenceUpdates().subscribe(dataUpdate => {
       const mediaEssence = dataUpdate.resource;
 
-      if (!this.guid || !mediaEssence?.id?.includes(this.guid)) {
+      if (!this.assetGuid || !mediaEssence?.id?.includes(this.assetGuid)) {
         return;
       }
 
@@ -76,7 +76,7 @@ export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.routeSubscription = this.route.params.pipe(
-      map(params => this.guid = params["guid"]),
+      map(params => this.assetGuid = params["guid"]),
       switchMap(guid => this.data.getMediaAssetEssences(guid))
     ).subscribe(essences => {
       // this.logger.info(essences);
@@ -85,9 +85,6 @@ export class AssetFilesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.selectedMediaEssence = this.mediaEssences[0];
       this.isLoadingResults = false;
     });
-  }
-
-  ngAfterViewInit(): void {
   }
 
   ngOnDestroy(): void {
