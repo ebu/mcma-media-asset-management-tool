@@ -21,7 +21,7 @@ export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDe
 
   resultsLength = 0;
   nextPageTokens: string[] = [];
-  isLoadingResults = true;
+  isLoading = true;
 
   paginatorSubscription: Subscription | undefined;
   dataUpdateSubscription: Subscription | undefined;
@@ -37,7 +37,7 @@ export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDe
     this.dataUpdateSubscription = this.data.getMediaWorkflowUpdates().subscribe(dataUpdate => {
       switch (dataUpdate.operation) {
         case DataOperation.Insert:
-          if (this.paginator!.pageIndex === 0) {
+          if (this.paginator!.pageIndex === 0 && !this.mediaWorkflows.find(wf => wf.id === dataUpdate.resource.id)) {
             this.mediaWorkflows.unshift(dataUpdate.resource);
             if (this.mediaWorkflows.length > this.PageSize) {
               this.mediaWorkflows.pop();
@@ -69,11 +69,11 @@ export class WorkflowsComponent implements AfterViewInit, AfterViewChecked, OnDe
     this.paginatorSubscription = this.paginator!.page.pipe(
       startWith({ pageIndex: 0, pageSize: this.PageSize, length: 0 }),
       switchMap((event: PageEvent) => {
-        this.isLoadingResults = true;
+        this.isLoading = true;
         return zip(of(event), this.data.listMediaWorkflows(this.PageSize, this.nextPageTokens[event.pageIndex]));
       }),
       map(([event, queryResults]) => {
-        this.isLoadingResults = false;
+        this.isLoading = false;
 
         if (queryResults.nextPageStartToken) {
           this.nextPageTokens[event.pageIndex + 1] = queryResults.nextPageStartToken;

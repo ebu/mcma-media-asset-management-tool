@@ -7,6 +7,7 @@ import { DialogAssetIngestComponent } from "./dialog-asset-ingest";
 import { DialogSessionExpiredComponent } from "./dialog-session-expired";
 import { DialogUploadComponent } from "./dialog-upload";
 import { DialogAssetDeleteComponent } from './dialog-asset-delete/dialog-asset-delete.component';
+import { DialogRunWorkflowComponent } from './dialog-run-workflow/dialog-run-workflow.component';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import { DialogAssetDeleteComponent } from './dialog-asset-delete/dialog-asset-d
     DialogSessionExpiredComponent,
     DialogUploadComponent,
     DialogAssetDeleteComponent,
+    DialogRunWorkflowComponent,
   ],
   imports: [
     CommonModule,

@@ -83,7 +83,7 @@ export class AssetAddComponent implements OnInit {
           this.data.createWorkflow(workflow).subscribe(result => {
             this.logger.info(result);
             successDialogRef.afterClosed().subscribe(() => {
-              this.router.navigate(["assets"]);
+              this.router.navigate(["workflows"]);
             });
             DialogAssetIngestComponent.showDialog(successDialogRef);
           });

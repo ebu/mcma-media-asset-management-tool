@@ -1,6 +1,6 @@
 <div class="loading-shade"
-     *ngIf="isLoadingResults">
-  <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+     *ngIf="isLoading">
+  <mat-spinner *ngIf="isLoading"></mat-spinner>
 </div>
 
 <div class="container">
@@ -8,7 +8,8 @@
     <div class="list-container">
       <div class="list-content">
         <mat-selection-list [multiple]="false" (selectionChange)="onSelectionChange($event)">
-          <mat-list-option *ngFor="let assetWorkflow of mediaAssetWorkflows" [value]="assetWorkflow" [selected]="this.selectedMediaAssetWorkflow === assetWorkflow">
+          <mat-list-option *ngFor="let assetWorkflow of mediaAssetWorkflows" [value]="assetWorkflow"
+                           [selected]="this.selectedMediaAssetWorkflow === assetWorkflow">
             {{assetWorkflow.dateCreated | date : "YYYY-MM-dd HH:mm" }} - {{assetWorkflow.mediaWorkflowType}}
           </mat-list-option>
         </mat-selection-list>
@@ -18,6 +19,12 @@
   <div class="right-column">
     <div class="detail-container">
       <div class="detail">
+        <h2>{{selectedMediaAssetWorkflow?.mediaWorkflowType}}{{mediaWorkflow?.status ? " - " + mediaWorkflow?.status : ""}}</h2>
+
+        <app-aws-celebrity-recognition *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsCelebrityRecognition'"
+                                       [assetWorkflow]="selectedMediaAssetWorkflow"
+                                       (isLoadingEvent)="setChildLoading($event)"
+        ></app-aws-celebrity-recognition>
       </div>
     </div>
   </div>

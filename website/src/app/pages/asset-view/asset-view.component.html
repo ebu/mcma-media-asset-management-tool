@@ -13,10 +13,15 @@
         </tr>
       </table>
     </div>
-    <video class="video-player"
-           controls
-           src="{{asset?.videoUrl}}">
-    </video>
+    <div #container class="video-container">
+      <video #video class="video-player"
+             controls
+             controlslist="nofullscreen"
+             disablepictureinpicture
+             src="{{asset?.videoUrl}}">
+      </video>
+      <canvas #canvas class="video-overlay"></canvas>
+    </div>
   </div>
   <mat-tab-group class="center-container"
                  animationDuration="0ms">
@@ -29,7 +34,7 @@
   </mat-tab-group>
   <div class="bottom-container">
     <div class="left-button-container">
-      <button mat-raised-button color="primary">Run Workflow</button>
+      <button mat-raised-button color="primary" (click)="openDialogRunWorkflow()">Run Workflow</button>
       <button mat-raised-button color="warn" (click)="openDialogAssetDelete()">Delete</button>
     </div>
     <div class="right-button-container">

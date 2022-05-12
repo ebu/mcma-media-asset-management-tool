@@ -2,7 +2,8 @@ import { JobStatus, McmaResource, McmaResourceProperties, ProblemDetail, Problem
 
 export enum MediaWorkflowType {
     MediaIngest = "MediaIngest",
-    SpeechToTextAws = "SpeechToTextAws",
+    AwsCelebrityRecognition = "AwsCelebrityRecognition",
+    AwsTranscription = "AwsTranscription",
 }
 
 export interface MediaWorkflowProperties extends McmaResourceProperties {
@@ -53,7 +54,7 @@ export class MediaWorkflow extends McmaResource implements MediaWorkflowProperti
 export interface MediaAssetWorkflowProperties extends McmaResourceProperties {
     mediaWorkflowType: MediaWorkflowType;
     mediaWorkflowId: string;
-    data: { [key: string]: any };
+    data?: { [key: string]: any };
 }
 
 export class MediaAssetWorkflow extends McmaResource implements MediaAssetWorkflowProperties {
@@ -66,6 +67,10 @@ export class MediaAssetWorkflow extends McmaResource implements MediaAssetWorkfl
 
         this.checkProperty("mediaWorkflowType", "string", true);
         this.checkProperty("mediaWorkflowId", "url", true);
-        this.checkProperty("data", "object", true);
+        this.checkProperty("data", "object", false);
+
+        if (!this.data) {
+            this.data = {};
+        }
     }
 }

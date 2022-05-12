@@ -22,7 +22,7 @@ const routes: Routes = [
       { path: "workflows", component: WorkflowsComponent, canActivate: [CognitoAuthGuard] },
       { path: "settings", component: SettingsComponent, canActivate: [CognitoAuthGuard] },
 
-      { path: "**", redirectTo: "assets/3e178a9e-8856-4656-80ff-014bca1818a7" }
+      { path: "**", redirectTo: "assets" }
     ]
   },
 ];

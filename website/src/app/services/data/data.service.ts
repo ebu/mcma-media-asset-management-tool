@@ -98,6 +98,10 @@ export class DataService {
     );
   }
 
+  get<T>(url: string) {
+    return this.http.get<T>(url);
+  }
+
   getMediaAsset(guid: string): Observable<MediaAsset> {
     return this.getRestApiUrl().pipe(
       switchMap(url => this.http.get<MediaAsset>(`${url}/assets/${guid}`))

@@ -1,12 +1,14 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-
-import { MediaAssetWorkflow } from "@local/model";
 import { MatSelectionListChange } from "@angular/material/list";
-import { Subscription } from "rxjs";
-import { map, switchMap } from "rxjs/operators";
 import { ActivatedRoute } from "@angular/router";
+import { Subscription } from "rxjs";
+import { filter, map, switchMap } from "rxjs/operators";
+
+import { MediaAssetWorkflow, MediaWorkflow } from "@local/model";
+
 import { DataService, LoggerService } from "../../services";
 import { DataOperation } from "../../services/data/data-update";
+import { JobStatus } from "@mcma/core";
 
 @Component({
   selector: "app-asset-workflows",
@@ -17,11 +19,35 @@ export class AssetWorkflowsComponent implements OnInit, OnDestroy {
   assetGuid: string | undefined;
   mediaAssetWorkflows: MediaAssetWorkflow[] = [];
   selectedMediaAssetWorkflow: MediaAssetWorkflow | undefined;
+  mediaWorkflow: MediaWorkflow | undefined;
 
-  isLoadingResults: boolean = true;
+  private isParentLoading: boolean = true;
+  private isChildLoading: boolean = false;
+
+  get isLoading(): boolean {
+    return this.isParentLoading || this.isChildLoading;
+  }
 
   private routeSubscription: Subscription | undefined;
-  private dataUpdateSubscription: Subscription | undefined;
+  private mediaAssetWorkflowUpdateSubscription: Subscription | undefined;
+  private mediaWorkflowSubscription: Subscription | undefined;
+  private mediaWorkflowUpdateSubscription: Subscription | undefined;
+
+  get mediaWorkflowDuration(): number | undefined {
+    if (this.mediaWorkflow) {
+      switch (this.mediaWorkflow.status) {
+        case JobStatus.Completed:
+        case JobStatus.Failed:
+        case JobStatus.Canceled:
+          const dateCreated = this.mediaWorkflow.dateCreated;
+          const dateModified = this.mediaWorkflow.dateModified;
+          if (dateCreated && dateModified) {
+            return Math.round((dateModified.getTime() - dateCreated.getTime()) / 1000);
+          }
+      }
+    }
+    return undefined;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -30,7 +56,7 @@ export class AssetWorkflowsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.dataUpdateSubscription = this.data.getMediaAssetWorkflowUpdates().subscribe(dataUpdate => {
+    this.mediaAssetWorkflowUpdateSubscription = this.data.getMediaAssetWorkflowUpdates().subscribe(dataUpdate => {
       const mediaAssetWorkflow = dataUpdate.resource;
 
       if (!this.assetGuid || !mediaAssetWorkflow?.id?.includes(this.assetGuid)) {
@@ -39,9 +65,11 @@ export class AssetWorkflowsComponent implements OnInit, OnDestroy {
 
       switch (dataUpdate.operation) {
         case DataOperation.Insert:
-          this.mediaAssetWorkflows = [mediaAssetWorkflow, ...this.mediaAssetWorkflows];
-          if (!this.selectedMediaAssetWorkflow) {
-            this.selectedMediaAssetWorkflow = this.mediaAssetWorkflows[0];
+          if (!this.mediaAssetWorkflows.find(wf => wf.id === dataUpdate.resource.id)) {
+            this.mediaAssetWorkflows = [mediaAssetWorkflow, ...this.mediaAssetWorkflows];
+            if (!this.selectedMediaAssetWorkflow) {
+              this.selectedMediaAssetWorkflow = this.mediaAssetWorkflows[0];
+            }
           }
           break;
         case DataOperation.Update:
@@ -68,24 +96,54 @@ export class AssetWorkflowsComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.mediaWorkflowUpdateSubscription = this.data.getMediaWorkflowUpdates().pipe(
+      filter(dataUpdate => dataUpdate.operation === DataOperation.Update),
+      map(dataUpdate => dataUpdate.resource),
+      filter(mediaWorkflow => mediaWorkflow.mediaAssetWorkflowId === this.selectedMediaAssetWorkflow?.id),
+    ).subscribe(mediaWorkflow => {
+      this.mediaWorkflow = mediaWorkflow;
+    });
+
     this.routeSubscription = this.route.params.pipe(
       map(params => this.assetGuid = params["guid"]),
       switchMap(guid => this.data.getMediaAssetWorkflows(guid))
-    ).subscribe(essences => {
-      this.logger.info(essences);
-      this.mediaAssetWorkflows = essences.results;
+    ).subscribe(assetWorkflows => {
+      this.mediaAssetWorkflows = assetWorkflows.results;
 
       this.selectedMediaAssetWorkflow = this.mediaAssetWorkflows[0];
-      this.isLoadingResults = false;
+      this.updateWorkflow();
     });
   }
 
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
-    this.dataUpdateSubscription?.unsubscribe();
+    this.mediaAssetWorkflowUpdateSubscription?.unsubscribe();
+    this.mediaWorkflowUpdateSubscription?.unsubscribe();
+    this.mediaWorkflowSubscription?.unsubscribe();
   }
 
   onSelectionChange(event: MatSelectionListChange) {
     this.selectedMediaAssetWorkflow = event.options[0].value;
+    this.updateWorkflow();
+  }
+
+  private updateWorkflow() {
+    this.mediaWorkflow = undefined;
+    this.mediaWorkflowSubscription?.unsubscribe();
+
+    if (this.selectedMediaAssetWorkflow) {
+      this.isParentLoading = true;
+      this.isChildLoading = false;
+      this.mediaWorkflowSubscription = this.data.get<MediaWorkflow>(this.selectedMediaAssetWorkflow.mediaWorkflowId).subscribe(wf => {
+        this.mediaWorkflow = wf;
+        this.isParentLoading = false;
+      });
+    } else {
+      this.isParentLoading = false;
+    }
+  }
+
+  setChildLoading(isLoading: boolean) {
+    this.isChildLoading = isLoading;
   }
 }

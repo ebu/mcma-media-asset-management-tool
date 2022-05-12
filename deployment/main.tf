@@ -78,6 +78,7 @@ module "service_registry" {
     module.job_processor.service_definition,
     module.mediainfo_ame_service.service_definition,
     module.ffmpeg_service.service_definition,
+    module.aws_ai_service.service_definition,
     module.stepfunctions_workflow_service.service_definition,
   ]
 }
@@ -106,6 +107,7 @@ module "job_processor" {
     "${module.ffmpeg_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.mediainfo_ame_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.stepfunctions_workflow_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.aws_ai_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.service.aws_apigatewayv2_api.rest_api.execution_arn}/${var.environment_type}/*/*",
   ]
 }
@@ -147,6 +149,28 @@ module "ffmpeg_service" {
   log_group = aws_cloudwatch_log_group.main
 }
 
+#########################
+# AWS AI service
+#########################
+
+module "aws_ai_service" {
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.1/module.zip"
+
+  prefix = "${var.global_prefix}-aws-ai-service"
+
+  stage_name = var.environment_type
+  aws_region = var.aws_region
+
+  service_registry = module.service_registry
+
+  apigateway_execute_arns = [
+    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+  ]
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
 ########################################
 # AWS Step Functions Workflow Service
 ########################################
@@ -166,7 +190,8 @@ module "stepfunctions_workflow_service" {
   log_group = aws_cloudwatch_log_group.main
 
   workflows = [
-    module.media_ingest_workflow.workflow_definition
+    module.media_ingest_workflow.workflow_definition,
+    module.aws_celebrity_recognition.workflow_definition,
   ]
 }
 
@@ -174,6 +199,23 @@ module "media_ingest_workflow" {
   source = "../workflows/media-ingest"
 
   prefix = "${var.global_prefix}-wf-media-ingest"
+
+  aws_account_id = data.aws_caller_identity.current.account_id
+  aws_region     = var.aws_region
+
+  service_registry = module.service_registry
+  job_processor    = module.job_processor
+  mam_service      = module.service
+
+  media_bucket = aws_s3_bucket.media
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
+module "aws_celebrity_recognition" {
+  source = "../workflows/aws-celebrity-recognition"
+
+  prefix = "${var.global_prefix}-wf-aws-celebrity-recognition"
 
   aws_account_id = data.aws_caller_identity.current.account_id
   aws_region     = var.aws_region

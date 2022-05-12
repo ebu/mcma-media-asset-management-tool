@@ -46,7 +46,6 @@ export async function handler(event: InputEvent, context: Context) {
             const mediaAssetWorkflow = await dataController.createMediaAssetWorkflow(mediaAsset.id, new MediaAssetWorkflow({
                 mediaWorkflowId: mediaWorkflow.id,
                 mediaWorkflowType: mediaWorkflow.type,
-                data: {}
             }));
 
             mediaWorkflow.mediaAssetId = mediaAsset.id;

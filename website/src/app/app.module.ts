@@ -14,10 +14,11 @@ import { SettingsComponent } from "./pages/settings/settings.component";
 import { HomeComponent } from "./pages/home/home.component";
 import { DialogsModule } from "./dialogs/dialogs.module";
 import { httpInterceptorProviders } from "./http-interceptors";
-import { AssetViewComponent } from './pages/asset-view/asset-view.component';
-import { AssetFilesComponent } from './components/asset-files/asset-files.component';
-import { AssetWorkflowsComponent } from './components/asset-workflows/asset-workflows.component';
+import { AssetViewComponent } from "./pages/asset-view/asset-view.component";
+import { AssetFilesComponent } from "./components/asset-files/asset-files.component";
+import { AssetWorkflowsComponent } from "./components/asset-workflows/asset-workflows.component";
 import { AsModule, DurationModule, FilesizeModule } from "./pipes";
+import { AwsCelebrityRecognitionComponent } from "./components/aws-celebrity-recognition/aws-celebrity-recognition.component";
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { AsModule, DurationModule, FilesizeModule } from "./pipes";
     AssetViewComponent,
     AssetFilesComponent,
     AssetWorkflowsComponent,
+    AwsCelebrityRecognitionComponent,
   ],
   imports: [
     AppRoutingModule,

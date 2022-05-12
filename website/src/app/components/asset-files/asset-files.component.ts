@@ -25,7 +25,7 @@ export class AssetFilesComponent implements OnInit, OnDestroy {
   ImageEssence = ImageEssence;
   AudioEssence = AudioEssence;
 
-  isLoadingResults: boolean = true;
+  isLoading: boolean = true;
 
   private routeSubscription: Subscription | undefined;
   private dataUpdateSubscription: Subscription | undefined;
@@ -46,9 +46,11 @@ export class AssetFilesComponent implements OnInit, OnDestroy {
 
       switch (dataUpdate.operation) {
         case DataOperation.Insert:
-          this.mediaEssences = [mediaEssence, ...this.mediaEssences];
-          if (!this.selectedMediaEssence) {
-            this.selectedMediaEssence = this.mediaEssences[0];
+          if (!this.mediaEssences.find(e => e.id === dataUpdate.resource.id)) {
+            this.mediaEssences = [mediaEssence, ...this.mediaEssences];
+            if (!this.selectedMediaEssence) {
+              this.selectedMediaEssence = this.mediaEssences[0];
+            }
           }
           break;
         case DataOperation.Update:
@@ -83,7 +85,7 @@ export class AssetFilesComponent implements OnInit, OnDestroy {
       this.mediaEssences = essences.results;
 
       this.selectedMediaEssence = this.mediaEssences[0];
-      this.isLoadingResults = false;
+      this.isLoading = false;
     });
   }
 

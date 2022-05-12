@@ -14,13 +14,15 @@ export class AwsV4Interceptor implements HttpInterceptor {
   constructor(private injector: Injector) {}
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // handle relative urls without authentication
+    // handle relative urls without authentication (needed to fetch the config file to initialize the config service)
     if (!req.url.startsWith("http")) {
       return next.handle(req);
     }
 
-    // other requests should be signed
-    return this.signRequest(req, next);
+    // only sign requests whose url matches the Rest API Url.
+    return this.injector.get(ConfigService).get<string>("RestApiUrl").pipe(
+      switchMap(url => req.url.startsWith(url) ? this.signRequest(req, next) : next.handle(req))
+    );
   }
 
   private signRequest(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {

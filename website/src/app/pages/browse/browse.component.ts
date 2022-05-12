@@ -22,7 +22,7 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
 
   resultsLength = 0;
   nextPageTokens: string[] = [];
-  isLoadingResults = true;
+  isLoading = true;
 
   paginatorSubscription: Subscription | undefined;
   dataUpdateSubscription: Subscription | undefined;
@@ -38,7 +38,7 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
     this.dataUpdateSubscription = this.data.getMediaAssetUpdates().subscribe(dataUpdate => {
       switch (dataUpdate.operation) {
         case DataOperation.Insert:
-          if (this.paginator!.pageIndex === 0) {
+          if (this.paginator!.pageIndex === 0 && !this.mediaAssets.find(a => a.id === dataUpdate.resource.id)) {
             this.mediaAssets.unshift(dataUpdate.resource);
             if (this.mediaAssets.length > this.PageSize) {
               this.mediaAssets.pop();
@@ -70,11 +70,11 @@ export class BrowseComponent implements AfterViewInit, AfterViewChecked, OnDestr
     this.paginatorSubscription = this.paginator!.page.pipe(
       startWith({ pageIndex: 0, pageSize: this.PageSize, length: 0 }),
       switchMap((event: PageEvent) => {
-        this.isLoadingResults = true;
+        this.isLoading = true;
         return zip(of(event), this.data.listMediaAssets(this.PageSize, this.nextPageTokens[event.pageIndex]));
       }),
       map(([event, queryResults]) => {
-        this.isLoadingResults = false;
+        this.isLoading = false;
 
         if (queryResults.nextPageStartToken) {
           this.nextPageTokens[event.pageIndex + 1] = queryResults.nextPageStartToken;

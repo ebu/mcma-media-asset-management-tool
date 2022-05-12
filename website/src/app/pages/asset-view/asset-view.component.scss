@@ -1,5 +1,9 @@
 @import "../../../variables.scss";
 
+video::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+
 :host {
   display: flex;
   flex-direction: column;
@@ -21,9 +25,17 @@
   flex:1;
 }
 
+.video-container {
+  display: flex;
+}
+
 .video-player {
-  width: 640px;
-  height: 360px;
+}
+
+.video-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
 }
 
 .center-container{

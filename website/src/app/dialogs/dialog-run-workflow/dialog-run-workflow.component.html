@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>Run Workflow</h1>
+<div mat-dialog-content>
+  <p>Select the workflow you want to execute</p>
+  <mat-form-field class="full-width-input">
+    <mat-label>Workflow</mat-label>
+    <mat-select [(value)]="selectedWorkflowType">
+      <mat-option *ngFor="let wft of workflowTypes" [value]="wft">
+        {{wft}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field  class="full-width-input">
+    <mat-label>Input File</mat-label>
+    <mat-select [(value)]="selectedEssence">
+      <mat-option *ngFor="let essence of filteredMediaEssences" [value]="essence">
+        {{essence.filename}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="primary" class="centered" mat-dialog-close>Cancel</button>
+  <button mat-raised-button color="primary" class="centered" mat-dialog-close [disabled]="!canStartWorkflow()" (click)="startWorkflow()">Start</button>
+</div>
