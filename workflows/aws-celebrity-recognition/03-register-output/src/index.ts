@@ -46,47 +46,56 @@ export async function handler(event: InputEvent, context: Context) {
         logger.info(job);
 
         logger.info("Copying celebrity recognition data file to final location");
-        const outputFile = job.jobOutput.outputFile as S3Locator;
+        const outputFiles = job.jobOutput.outputFiles as S3Locator[];
 
-        let filename = outputFile.key.substring(outputFile.key.lastIndexOf("/") + 1);
-        const extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        const timestamp = new Date().toISOString().substring(0, 19).replace(/[:-]/g, "").replace("T", "-");
+        const essenceIds: string[] = [];
 
-        filename = filename.replace("." + extension, "-" + new Date().toISOString().substring(0, 19).replace(/[:-]/g, "").replace("T", "-") + "." + extension);
-        const key = `${event.input.mediaAssetId.substring(PublicUrl.length + 1)}/${filename}`;
+        logger.info(outputFiles);
+        for (const outputFile of outputFiles) {
+            logger.info(outputFile);
+            let filename = outputFile.key.substring(outputFile.key.lastIndexOf("/") + 1);
+            const extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
 
-        const response = await axios.get(outputFile.url, { responseType: "stream" });
-        logger.info(response.headers);
-        let size = Number.parseInt(response.headers["content-length"]);
-        if (Number.isNaN(size)) {
-            size = undefined;
+            filename = filename.replace("." + extension, "-" + timestamp + "." + extension);
+            const key = `${event.input.mediaAssetId.substring(PublicUrl.length + 1)}/${filename}`;
+
+            const response = await axios.get(outputFile.url, { responseType: "stream" });
+            logger.info(response.headers);
+            let size = Number.parseInt(response.headers["content-length"]);
+            if (Number.isNaN(size)) {
+                size = undefined;
+            }
+            const contentType = response.headers["content-type"];
+
+            const uploadParams: AWS.S3.Types.PutObjectRequest = {
+                Bucket: MediaBucket,
+                Key: key,
+                Body: response.data,
+                ContentType: contentType,
+            };
+            await s3.upload(uploadParams).promise();
+
+            logger.info("Creating Media Essence");
+            const url = await buildS3Url(uploadParams.Bucket, uploadParams.Key, s3);
+
+            const locators = [new S3Locator({ url: url })];
+            const tags: string[] = ["AwsCelebrityRecognition"];
+
+            const essence = await dataController.createMediaEssence(event.input.mediaAssetId, new MediaEssence({
+                filename,
+                extension,
+                size,
+                locators,
+                tags,
+            }));
+            logger.info(essence);
+
+            essenceIds.push(essence.id);
         }
-        const contentType = response.headers["content-type"];
-
-        const uploadParams: AWS.S3.Types.PutObjectRequest = {
-            Bucket: MediaBucket,
-            Key: key,
-            Body: response.data,
-            ContentType: contentType,
-        };
-        await s3.upload(uploadParams).promise();
-
-        logger.info("Creating Media Essence");
-        const thumbnailUrl = await buildS3Url(uploadParams.Bucket, uploadParams.Key, s3);
-
-        const locators = [new S3Locator({ url: thumbnailUrl })];
-        const tags: string[] = ["AwsCelebrityRecognition"];
-
-        const essence = await dataController.createMediaEssence(event.input.mediaAssetId, new MediaEssence({
-            filename,
-            extension,
-            size,
-            locators,
-            tags,
-        }));
-        logger.info(essence);
 
         const mediaAssetWorkflow = await dataController.get<MediaAssetWorkflow>(event.input.mediaAssetWorkflowId);
-        mediaAssetWorkflow.data.mediaEssenceId = essence.id;
+        mediaAssetWorkflow.data.mediaEssenceIds = essenceIds;
         await dataController.put(mediaAssetWorkflow.id, mediaAssetWorkflow);
     } catch (error) {
         logger.error("Failed to register output");

@@ -2,8 +2,8 @@ import { Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, OnInit, O
 
 import { MediaAssetWorkflow, MediaEssence } from "@local/model";
 import { DataService, DrawHandler, LoggerService, VideoService } from "../../services";
-import { switchMap } from "rxjs/operators";
-import { Subscription } from "rxjs";
+import { mergeMap, switchMap } from "rxjs/operators";
+import { from, Subscription } from "rxjs";
 import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { CelebrityDetail, CelebrityRecognition, GetCelebrityRecognitionResponse } from "aws-sdk/clients/rekognition";
 
@@ -56,10 +56,12 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
       this.celebrityData.clear();
       this.celebrities = [];
       this.videoService.invalidate();
-      const mediaEssenceId = change.currentValue.data.mediaEssenceId;
-      if (mediaEssenceId) {
+      const mediaEssenceIds = change.currentValue.data.mediaEssenceIds ?? [change.currentValue.data.mediaEssenceId];
+      console.log(mediaEssenceIds);
+      if (Array.isArray(mediaEssenceIds) && mediaEssenceIds.length > 0) {
         this.setLoading(true);
-        this.mediaEssenceSubscription = this.data.get<MediaEssence>(mediaEssenceId).pipe(
+        this.mediaEssenceSubscription = from(mediaEssenceIds).pipe(
+          mergeMap(mediaEssenceId => this.data.get<MediaEssence>(mediaEssenceId)),
           switchMap(me => this.data.get(me.locators[0].url)),
         ).subscribe(data => {
             const celebrityData = data as GetCelebrityRecognitionResponse;
@@ -78,11 +80,17 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
                 }
               }
             }
-
+          },
+          error => {
+            this.logger.warn(error);
+            this.setLoading(false);
+          },
+          () => {
             const celebrityIds = [...this.celebrityData.keys()];
             for (let i = 0; i < celebrityIds.length; i++) {
               const celebrityId = celebrityIds[i];
               const celebrityData = this.celebrityData.get(celebrityId)!;
+              celebrityData.sort((a, b) => a.Timestamp! - b.Timestamp!);
 
               const appearances: number[] = [];
 
@@ -111,9 +119,9 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
 
             this.celebrities = [...this.celebrities];
 
-            this.setLoading(false);
             this.videoService.invalidate();
-          }, error => this.setLoading(false)
+            this.setLoading(false);
+          }
         );
       }
     }

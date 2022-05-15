@@ -112,15 +112,29 @@ export class DataService {
     return this.http.delete<void>(assetId);
   }
 
-  getMediaAssetEssences(guid: string): Observable<QueryResults<MediaEssence>> {
+  listMediaAssetEssences(guid: string): Observable<QueryResults<MediaEssence>> {
+    const params: any = {
+      sortBy: "dateCreated",
+      sortOrder: "desc",
+    };
+
     return this.getRestApiUrl().pipe(
-      switchMap(url => this.http.get<QueryResults<MediaEssence>>(`${url}/assets/${guid}/essences`))
+      switchMap(url => this.http.get<QueryResults<MediaEssence>>(`${url}/assets/${guid}/essences`, {
+        params
+      }))
     );
   }
 
-  getMediaAssetWorkflows(guid: string): Observable<QueryResults<MediaAssetWorkflow>> {
+  listMediaAssetWorkflows(guid: string): Observable<QueryResults<MediaAssetWorkflow>> {
+    const params: any = {
+      sortBy: "dateCreated",
+      sortOrder: "desc",
+    };
+
     return this.getRestApiUrl().pipe(
-      switchMap(url => this.http.get<QueryResults<MediaAssetWorkflow>>(`${url}/assets/${guid}/workflows`))
+      switchMap(url => this.http.get<QueryResults<MediaAssetWorkflow>>(`${url}/assets/${guid}/workflows`, {
+        params
+      }))
     );
   }
 

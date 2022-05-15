@@ -106,7 +106,7 @@ export class AssetWorkflowsComponent implements OnInit, OnDestroy {
 
     this.routeSubscription = this.route.params.pipe(
       map(params => this.assetGuid = params["guid"]),
-      switchMap(guid => this.data.getMediaAssetWorkflows(guid))
+      switchMap(guid => this.data.listMediaAssetWorkflows(guid))
     ).subscribe(assetWorkflows => {
       this.mediaAssetWorkflows = assetWorkflows.results;
 

@@ -54,7 +54,7 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.mediaEssencesSubscription = this.dataService.getMediaAssetEssences(this.data.mediaAssetGuid).subscribe(essences => {
+    this.mediaEssencesSubscription = this.dataService.listMediaAssetEssences(this.data.mediaAssetGuid).subscribe(essences => {
       this.mediaEssences = essences.results;
     });
   }

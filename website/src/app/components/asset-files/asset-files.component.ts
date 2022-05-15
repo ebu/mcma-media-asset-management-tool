@@ -79,7 +79,7 @@ export class AssetFilesComponent implements OnInit, OnDestroy {
 
     this.routeSubscription = this.route.params.pipe(
       map(params => this.assetGuid = params["guid"]),
-      switchMap(guid => this.data.getMediaAssetEssences(guid))
+      switchMap(guid => this.data.listMediaAssetEssences(guid))
     ).subscribe(essences => {
       // this.logger.info(essences);
       this.mediaEssences = essences.results;
