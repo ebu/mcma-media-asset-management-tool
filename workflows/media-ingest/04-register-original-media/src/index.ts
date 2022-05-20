@@ -175,23 +175,28 @@ function createVideoTechnicalMetadata(ebucoreVideoFormat: any): VideoTechnicalMe
     }
 
     let bitRateMode = BitRateMode.Unknown;
-    switch (ebucoreVideoFormat[0]?.["ebucore:bitRateMode"]?.[0]?.["#value"]) {
-        case "variable":
-            bitRateMode = BitRateMode.VariableBitRate;
-            break;
-        default:
-            throw new McmaException("Not Implemented");
+    const bitRateModeStr = ebucoreVideoFormat[0]?.["ebucore:bitRateMode"]?.[0]?.["#value"];
+    if (bitRateModeStr) {
+        switch (bitRateModeStr) {
+            case "variable":
+                bitRateMode = BitRateMode.VariableBitRate;
+                break;
+            default:
+                throw new McmaException("Not Implemented");
+        }
     }
 
     let scanType = VideoScanType.Unknown;
-    switch (ebucoreVideoFormat[0]?.["ebucore:scanningFormat"]?.[0]?.["#value"]) {
-        case "progressive":
-            scanType = VideoScanType.ProgressiveFrame;
-            break;
-        default:
-            throw new McmaException("Not Implemented");
+    const scanTypeStr = ebucoreVideoFormat[0]?.["ebucore:scanningFormat"]?.[0]?.["#value"];
+    if (scanTypeStr) {
+        switch (scanTypeStr) {
+            case "progressive":
+                scanType = VideoScanType.ProgressiveFrame;
+                break;
+            default:
+                throw new McmaException("Not Implemented");
+        }
     }
-
     return new VideoTechnicalMetadata({
         codec,
         width,
@@ -223,12 +228,15 @@ function createAudioTechnicalMetadata(ebucoreAudioFormat: any): AudioTechnicalMe
     }
 
     let bitRateMode = BitRateMode.Unknown;
-    switch (ebucoreAudioFormat[0]?.["ebucore:bitRateMode"]?.[0]?.["#value"]) {
-        case "variable":
-            bitRateMode = BitRateMode.VariableBitRate;
-            break;
-        default:
-            throw new McmaException("Not Implemented");
+    const bitRateModeStr = ebucoreAudioFormat[0]?.["ebucore:bitRateMode"]?.[0]?.["#value"];
+    if (bitRateModeStr) {
+        switch (bitRateModeStr) {
+            case "variable":
+                bitRateMode = BitRateMode.VariableBitRate;
+                break;
+            default:
+                throw new McmaException("Not Implemented");
+        }
     }
 
     return new AudioTechnicalMetadata({

@@ -75,7 +75,7 @@ export class AssetAddComponent implements OnInit {
               title: this.form.get("title")?.value,
               description: this.form.get("description")?.value,
               inputFile: new S3Locator({
-                url: `https://${bucket}.s3.${region}.amazonaws.com/${key}`
+                url: encodeURI(`https://${bucket}.s3.${region}.amazonaws.com/${key}`)
               }),
             }
           });

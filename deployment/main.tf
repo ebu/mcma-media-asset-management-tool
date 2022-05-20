@@ -136,7 +136,7 @@ module "mediainfo_ame_service" {
 #########################
 
 module "ffmpeg_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.1/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.5/module.zip"
 
   prefix = "${var.global_prefix}-ffmpeg-service"
 
@@ -154,7 +154,7 @@ module "ffmpeg_service" {
 #########################
 
 module "aws_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.2/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.5/module.zip"
 
   prefix = "${var.global_prefix}-aws-ai-service"
 
