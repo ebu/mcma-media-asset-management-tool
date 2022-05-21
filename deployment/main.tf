@@ -117,16 +117,19 @@ module "job_processor" {
 #########################
 
 module "mediainfo_ame_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.0.1/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.0.2/module.zip"
 
   prefix = "${var.global_prefix}-mediainfo-ame-service"
 
   stage_name = var.environment_type
-
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
+
+  execute_api_arns = [
+    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+  ]
 
   log_group = aws_cloudwatch_log_group.main
 }
