@@ -28,7 +28,7 @@ export class VideoService {
       this.video.onpause = this.onPause.bind(this);
       this.video.onseeked = this.invalidate.bind(this);
       this.video.onresize = this.invalidate.bind(this);
-      this.video.ondblclick = this.requestFullScreen.bind(this);
+      this.video.ondblclick = this.toggleFullScreen.bind(this);
     }
   }
 
@@ -99,7 +99,6 @@ export class VideoService {
         }
       }
     }
-
   }
 
   addDrawHandler(drawHandler: DrawHandler) {
@@ -120,16 +119,20 @@ export class VideoService {
     this.invalidate();
   }
 
-  requestFullScreen() {
-    let width = screen.width;
-    let height = screen.height;
+  toggleFullScreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      let width = screen.width;
+      let height = screen.height;
 
-    if (this.container && this.video) {
-      this.container.requestFullscreen().then(() => {
-        if (this.container) {
-          this.resize(width, height);
-        }
-      });
+      if (this.container && this.video) {
+        this.container.requestFullscreen().then(() => {
+          if (this.container) {
+            this.resize(width, height);
+          }
+        });
+      }
     }
   }
 

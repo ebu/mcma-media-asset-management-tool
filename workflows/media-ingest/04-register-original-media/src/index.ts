@@ -181,8 +181,11 @@ function createVideoTechnicalMetadata(ebucoreVideoFormat: any): VideoTechnicalMe
             case "variable":
                 bitRateMode = BitRateMode.VariableBitRate;
                 break;
+            case "constant":
+                bitRateMode = BitRateMode.ConstantBitRate;
+                break;
             default:
-                throw new McmaException("Not Implemented");
+                throw new McmaException(`Unexpected video bitrate '${bitRateModeStr}'`);
         }
     }
 
@@ -194,7 +197,7 @@ function createVideoTechnicalMetadata(ebucoreVideoFormat: any): VideoTechnicalMe
                 scanType = VideoScanType.ProgressiveFrame;
                 break;
             default:
-                throw new McmaException("Not Implemented");
+                throw new McmaException(`Unexpected video scan type '${scanTypeStr}'`);
         }
     }
     return new VideoTechnicalMetadata({
@@ -234,8 +237,11 @@ function createAudioTechnicalMetadata(ebucoreAudioFormat: any): AudioTechnicalMe
             case "variable":
                 bitRateMode = BitRateMode.VariableBitRate;
                 break;
+            case "constant":
+                bitRateMode = BitRateMode.ConstantBitRate;
+                break;
             default:
-                throw new McmaException("Not Implemented");
+                throw new McmaException(`Unexpected audio bitrate '${bitRateModeStr}'`);
         }
     }
 
