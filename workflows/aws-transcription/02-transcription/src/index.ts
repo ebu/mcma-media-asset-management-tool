@@ -21,7 +21,7 @@ const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const stepFunctions = new AWS.StepFunctions();
 const s3 = new AWS.S3({ signatureVersion: "v4" });
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("aws-celebrity-recognition-02-celebrity-recognition", process.env.LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("aws-transcription-02-transcription", process.env.LogGroupName);
 const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
 
 type InputEvent = {
@@ -56,9 +56,9 @@ export async function handler(event: InputEvent, context: Context) {
         const notificationUrl = event.notificationEndpoint.httpEndpoint + "?taskToken=" + encodeURIComponent(taskToken);
         logger.info(`NotificationUrl: ${notificationUrl}`);
 
-        const [jobProfile] = await resourceManager.query(JobProfile, { name: "AwsCelebrityRecognition" });
+        const [jobProfile] = await resourceManager.query(JobProfile, { name: "AwsTranscription" });
         if (!jobProfile) {
-            throw new McmaException("JobProfile 'AwsCelebrityRecognition' not found.");
+            throw new McmaException("JobProfile 'AwsTranscription' not found.");
         }
 
         const inputFile = event.input.inputFile;

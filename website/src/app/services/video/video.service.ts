@@ -16,6 +16,9 @@ export class VideoService {
   private redrawSubscription?: Subscription;
   private drawHandlers: DrawHandler[] = [];
 
+  private track: HTMLTrackElement | undefined;
+  private trackUrl: string | undefined;
+
   constructor(private ngZone: NgZone) { }
 
   register(container: HTMLDivElement, video: HTMLVideoElement, canvas: HTMLCanvasElement) {
@@ -63,10 +66,10 @@ export class VideoService {
       this.canvas.width = width;
       this.canvas.height = height;
     }
+    this.invalidate();
   }
 
   invalidate() {
-
     if (this.canvas && this.video) {
       const context = this.canvas.getContext("2d");
 
@@ -139,6 +142,32 @@ export class VideoService {
   seek(timestamp: number) {
     if (this.video) {
       this.video.currentTime = timestamp;
+    }
+  }
+
+  addCaptionsTrack(label: string, srclang: string, webvtt: string) {
+    this.removeCaptionsTrack();
+    if (this.video) {
+      const blob = new Blob([webvtt], { type: "text/vtt"});
+      this.trackUrl = URL.createObjectURL(blob);
+      this.track = document.createElement("track");
+      this.track.kind = "captions";
+      this.track.label = label;
+      this.track.srclang = srclang;
+      this.track.src = this.trackUrl;
+      this.video.append(this.track);
+      this.video.textTracks[0].mode = "showing";
+    }
+  }
+
+  removeCaptionsTrack() {
+    if (this.track) {
+      this.track.remove();
+      this.track = undefined;
+    }
+    if (this.trackUrl) {
+      URL.revokeObjectURL(this.trackUrl);
+      this.trackUrl = undefined;
     }
   }
 }

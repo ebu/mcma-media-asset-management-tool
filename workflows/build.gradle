@@ -1,4 +1,5 @@
 task build {
     dependsOn "aws-celebrity-recognition:build"
+    dependsOn "aws-transcription:build"
     dependsOn "media-ingest:build"
 }

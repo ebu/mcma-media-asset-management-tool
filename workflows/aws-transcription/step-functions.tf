@@ -12,7 +12,7 @@ resource "aws_iam_role" "workflow" {
         Principal = {
           Service = "states.${var.aws_region}.amazonaws.com"
         }
-        Effect    = "Allow"
+        Effect = "Allow"
       }
     ]
   })
@@ -31,7 +31,7 @@ resource "aws_iam_role_policy" "workflow" {
         Action   = "lambda:InvokeFunction"
         Resource = [
           aws_lambda_function.step_01_validate_input.arn,
-          aws_lambda_function.step_02_celebrity_recognition.arn,
+          aws_lambda_function.step_02_transcription.arn,
           aws_lambda_function.step_03_register_output.arn,
         ]
       }
@@ -50,21 +50,21 @@ resource "aws_sfn_state_machine" "workflow" {
     Comment = "Media Ingest"
     StartAt = "Validate input"
     States  = {
-      "Validate input"             = {
+      "Validate input" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_01_validate_input.arn
         ResultPath = null
-        Next       = "Celebrity Recognition"
+        Next       = "Transcription"
       }
-      "Celebrity Recognition" = {
-        Type       = "Parallel"
-        Branches   = [
+      "Transcription" = {
+        Type     = "Parallel"
+        Branches = [
           {
             StartAt = "Start AI job"
             States  = {
               "Start AI job" = {
                 Type     = "Task"
-                Resource = aws_lambda_function.step_02_celebrity_recognition.arn
+                Resource = aws_lambda_function.step_02_transcription.arn
                 End      = true
               }
             }
@@ -74,7 +74,7 @@ resource "aws_sfn_state_machine" "workflow" {
             States  = {
               "Wait for AI job completion" = {
                 Type           = "Task"
-                Resource       = aws_sfn_activity.step_02_celebrity_recognition.id
+                Resource       = aws_sfn_activity.step_02_transcription.id
                 ResultPath     = "$.data.aiJobId"
                 TimeoutSeconds = 3600
                 End            = true
@@ -85,11 +85,11 @@ resource "aws_sfn_state_machine" "workflow" {
         OutputPath = "$[1]"
         Next       = "Register output"
       }
-      "Register output"    = {
+      "Register output" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_03_register_output.arn
         ResultPath = null
-        End       = true
+        End        = true
       }
     }
   })

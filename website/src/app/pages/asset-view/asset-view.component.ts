@@ -80,7 +80,7 @@ export class AssetViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.videoService.unregister()
+    this.videoService.unregister();
 
     this.routeSubscription?.unsubscribe();
     this.dataUpdateSubscription?.unsubscribe();

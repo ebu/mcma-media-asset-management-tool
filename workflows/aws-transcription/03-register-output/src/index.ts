@@ -16,7 +16,7 @@ const { MediaBucket, TableName, PublicUrl } = process.env;
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const s3 = new AWS.S3();
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("aws-celebrity-recognition-03-register-output", process.env.LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("aws-transcription-03-register-output", process.env.LogGroupName);
 const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
 const dataController = new DataController(TableName, PublicUrl, true, new AWS.DynamoDB());
 
@@ -41,11 +41,11 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(event);
         logger.debug(context);
 
-        logger.info("Retrieving celebrity recognition job results");
+        logger.info("Retrieving AI job results");
         let job = (await resourceManager.get<Job>(event.data.aiJobId)) as JobProperties;
         logger.info(job);
 
-        logger.info("Copying celebrity recognition data file to final location");
+        logger.info("Copying AI data file(s) to final location");
         const outputFiles = job.jobOutput.outputFiles as S3Locator[];
 
         const timestamp = new Date().toISOString().substring(0, 19).replace(/[:-]/g, "").replace("T", "-");
@@ -80,7 +80,7 @@ export async function handler(event: InputEvent, context: Context) {
             const url = await buildS3Url(uploadParams.Bucket, uploadParams.Key, s3);
 
             const locators = [new S3Locator({ url: url })];
-            const tags: string[] = ["AwsCelebrityRecognition"];
+            const tags: string[] = ["AwsTranscription"];
 
             const essence = await dataController.createMediaEssence(event.input.mediaAssetId, new MediaEssence({
                 filename,

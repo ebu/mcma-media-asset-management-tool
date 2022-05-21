@@ -154,7 +154,7 @@ module "ffmpeg_service" {
 #########################
 
 module "aws_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.5/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.6/module.zip"
 
   prefix = "${var.global_prefix}-aws-ai-service"
 
@@ -192,6 +192,7 @@ module "stepfunctions_workflow_service" {
   workflows = [
     module.media_ingest_workflow.workflow_definition,
     module.aws_celebrity_recognition.workflow_definition,
+    module.aws_transcription.workflow_definition,
   ]
 }
 
@@ -216,6 +217,23 @@ module "aws_celebrity_recognition" {
   source = "../workflows/aws-celebrity-recognition"
 
   prefix = "${var.global_prefix}-wf-aws-celebrity-recognition"
+
+  aws_account_id = data.aws_caller_identity.current.account_id
+  aws_region     = var.aws_region
+
+  service_registry = module.service_registry
+  job_processor    = module.job_processor
+  mam_service      = module.service
+
+  media_bucket = aws_s3_bucket.media
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
+module "aws_transcription" {
+  source = "../workflows/aws-transcription"
+
+  prefix = "${var.global_prefix}-wf-aws-transcription"
 
   aws_account_id = data.aws_caller_identity.current.account_id
   aws_region     = var.aws_region

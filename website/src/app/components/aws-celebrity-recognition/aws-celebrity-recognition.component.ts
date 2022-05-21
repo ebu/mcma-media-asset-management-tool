@@ -56,8 +56,7 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
       this.celebrityData.clear();
       this.celebrities = [];
       this.videoService.invalidate();
-      const mediaEssenceIds = change.currentValue.data.mediaEssenceIds ?? [change.currentValue.data.mediaEssenceId];
-      console.log(mediaEssenceIds);
+      const mediaEssenceIds = change.currentValue.data.mediaEssenceIds;
       if (Array.isArray(mediaEssenceIds) && mediaEssenceIds.length > 0) {
         this.setLoading(true);
         this.mediaEssenceSubscription = from(mediaEssenceIds).pipe(

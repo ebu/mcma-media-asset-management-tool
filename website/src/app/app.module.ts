@@ -19,6 +19,7 @@ import { AssetFilesComponent } from "./components/asset-files/asset-files.compon
 import { AssetWorkflowsComponent } from "./components/asset-workflows/asset-workflows.component";
 import { AsModule, DurationModule, FilesizeModule } from "./pipes";
 import { AwsCelebrityRecognitionComponent } from "./components/aws-celebrity-recognition/aws-celebrity-recognition.component";
+import { AwsTranscriptionComponent } from './components/aws-transcription/aws-transcription.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { AwsCelebrityRecognitionComponent } from "./components/aws-celebrity-rec
     AssetFilesComponent,
     AssetWorkflowsComponent,
     AwsCelebrityRecognitionComponent,
+    AwsTranscriptionComponent,
   ],
   imports: [
     AppRoutingModule,

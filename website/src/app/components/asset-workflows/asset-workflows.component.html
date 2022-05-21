@@ -23,8 +23,10 @@
 
         <app-aws-celebrity-recognition *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsCelebrityRecognition'"
                                        [assetWorkflow]="selectedMediaAssetWorkflow"
-                                       (isLoadingEvent)="setChildLoading($event)"
-        ></app-aws-celebrity-recognition>
+                                       (isLoadingEvent)="setChildLoading($event)"></app-aws-celebrity-recognition>
+        <app-aws-transcription *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsTranscription'"
+                               [assetWorkflow]="selectedMediaAssetWorkflow"
+                               (isLoadingEvent)="setChildLoading($event)"></app-aws-transcription>
       </div>
     </div>
   </div>
