@@ -33,7 +33,7 @@ module "service" {
   aws_account_id = data.aws_caller_identity.current.account_id
   aws_region     = var.aws_region
 
-  media_bucket = aws_s3_bucket.media
+  media_bucket     = aws_s3_bucket.media
   service_registry = module.service_registry
   job_processor    = module.job_processor
 
@@ -179,16 +179,19 @@ module "aws_ai_service" {
 ########################################
 
 module "stepfunctions_workflow_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.0.3/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.0.4/module.zip"
 
   prefix = "${var.global_prefix}-stepfunctions-workflow-service"
 
   stage_name = var.environment_type
+  aws_region = var.aws_region
 
-  aws_account_id   = data.aws_caller_identity.current.account_id
-  aws_region       = var.aws_region
   service_registry = module.service_registry
-  job_processor    = module.job_processor
+
+  execute_api_arns = [
+    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+  ]
 
   log_group = aws_cloudwatch_log_group.main
 

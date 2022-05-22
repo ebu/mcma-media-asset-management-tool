@@ -4,7 +4,6 @@ import { MediaAssetWorkflow, MediaEssence } from "@local/model";
 import { DataService, DrawHandler, LoggerService, VideoService } from "../../services";
 import { mergeMap, switchMap } from "rxjs/operators";
 import { from, Subscription } from "rxjs";
-import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { CelebrityDetail, CelebrityRecognition, GetCelebrityRecognitionResponse } from "aws-sdk/clients/rekognition";
 
 export interface CelebrityInfo {
@@ -34,7 +33,6 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
 
   private readonly colors = ["#EC3445", "#FCDD30", "#51BC37", "#1582FD", "#733294", "#FB761F"];
 
-  overlayEnabled: boolean = true;
   private celebrityData: Map<string, CelebrityRecognition[]> = new Map<string, CelebrityRecognition[]>();
   private mediaEssenceSubscription: Subscription | undefined;
   private drawHandler: DrawHandler = this.draw.bind(this);
@@ -135,11 +133,6 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
     this.isLoadingEvent.emit(value);
   }
 
-  toggleOverlay(event: MatSlideToggleChange) {
-    this.overlayEnabled = event.checked;
-    this.videoService.invalidate();
-  }
-
   private updateCelebrityStatistics(visibleCelebrities: CelebrityDetail[]) {
     const map = new Map<string, CelebrityDetail>();
 
@@ -176,14 +169,12 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
 
     this.updateCelebrityStatistics(celebrityDetails);
 
-    if (this.overlayEnabled) {
-      const celebrityIds = [...this.celebrityData.keys()];
+    const celebrityIds = [...this.celebrityData.keys()];
 
-      celebrityDetails.forEach(celebrityDetail => {
-        const color = this.colors[celebrityIds.indexOf(celebrityDetail.Id!) % this.colors.length];
-        this.drawCelebrity(celebrityDetail, color, context, width, height);
-      });
-    }
+    celebrityDetails.forEach(celebrityDetail => {
+      const color = this.colors[celebrityIds.indexOf(celebrityDetail.Id!) % this.colors.length];
+      this.drawCelebrity(celebrityDetail, color, context, width, height);
+    });
   }
 
   private drawCelebrity(celebrity: CelebrityDetail, color: string, context: CanvasRenderingContext2D, width: number, height: number) {
