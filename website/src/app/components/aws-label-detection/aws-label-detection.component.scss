@@ -1,0 +1,35 @@
+table {
+  width: 100%;
+  margin-bottom: 2em;
+}
+
+.mat-column-select {
+  width: 40px;
+}
+
+.mat-column-color {
+  padding: 0;
+  width: 80px;
+}
+
+.mat-column-name {
+  padding: 0;
+  width: 300px;
+}
+
+.mat-column-appearances {
+  padding: 0;
+  width: 600px;
+}
+
+.mat-column-confidence {
+  padding: 0;
+  width: 100px;
+}
+
+.dot {
+  height: 25px;
+  width: 25px;
+  border-radius: 50%;
+  display: inline-block;
+}

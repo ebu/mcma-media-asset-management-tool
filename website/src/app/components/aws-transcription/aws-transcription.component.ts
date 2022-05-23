@@ -57,7 +57,6 @@ export class AwsTranscriptionComponent implements OnInit, OnChanges, OnDestroy {
             this.videoService.addCaptionsTrack("English", "en", data);
 
             const lines = data.split("\n");
-            this.logger.info(lines);
 
             let start = undefined;
             for (let i = 0; i < lines.length; i++) {

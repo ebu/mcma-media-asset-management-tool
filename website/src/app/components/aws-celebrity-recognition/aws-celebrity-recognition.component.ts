@@ -31,7 +31,7 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
   celebrities: CelebrityInfo[] = [];
   displayedColumns: string[] = ["color", "name", "appearances", "confidence"];
 
-  private readonly colors = ["#EC3445", "#FCDD30", "#51BC37", "#1582FD", "#733294", "#FB761F"];
+  private readonly colors = [ "#ec3445", "#fcdd30", "#51bc37", "#1582fd", "#733294", "#fb761f", "#ab526b", "#cdb380", "#005f6b", "#f02475", "#aab3ab", "#607848", "#ff4e50", "#40c0cb", "#e1edb9", "#d3ce3d", "#5e8c6a", "#f0a830", "#2a2829", "#ff8c94", "#5d4157", "#6a4a3c", "#bef202", "#f9f2e7"];
 
   private celebrityData: Map<string, CelebrityRecognition[]> = new Map<string, CelebrityRecognition[]>();
   private mediaEssenceSubscription: Subscription | undefined;
@@ -58,8 +58,9 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
       if (Array.isArray(mediaEssenceIds) && mediaEssenceIds.length > 0) {
         this.setLoading(true);
         this.mediaEssenceSubscription = from(mediaEssenceIds).pipe(
-          mergeMap(mediaEssenceId => this.data.get<MediaEssence>(mediaEssenceId)),
-          switchMap(me => this.data.get(me.locators[0].url)),
+          mergeMap(mediaEssenceId => this.data.get<MediaEssence>(mediaEssenceId).pipe(
+            switchMap(me => this.data.get(me.locators[0].url)),
+          )),
         ).subscribe(data => {
             const celebrityData = data as GetCelebrityRecognitionResponse;
             if (celebrityData?.Celebrities) {

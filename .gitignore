@@ -1,8 +1,10 @@
 .idea/
 .gradle/
 .terraform/
+.angular/
 build/
 node_modules/
+dist/
 .terraform.tfstate.lock.info
 gradle.properties
 terraform.tfstate

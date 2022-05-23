@@ -90,3 +90,7 @@ task generateTerraformWebsiteTF {
 task build {
   dependsOn generateTerraformWebsiteTF
 }
+
+clean {
+  delete ".angular"
+}

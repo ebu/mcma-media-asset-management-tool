@@ -24,6 +24,9 @@
         <app-aws-celebrity-recognition *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsCelebrityRecognition'"
                                        [assetWorkflow]="selectedMediaAssetWorkflow"
                                        (isLoadingEvent)="setChildLoading($event)"></app-aws-celebrity-recognition>
+        <app-aws-label-detection *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsLabelDetection'"
+                               [assetWorkflow]="selectedMediaAssetWorkflow"
+                               (isLoadingEvent)="setChildLoading($event)"></app-aws-label-detection>
         <app-aws-transcription *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsTranscription'"
                                [assetWorkflow]="selectedMediaAssetWorkflow"
                                (isLoadingEvent)="setChildLoading($event)"></app-aws-transcription>
