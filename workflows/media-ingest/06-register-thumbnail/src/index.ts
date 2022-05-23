@@ -105,9 +105,6 @@ export async function handler(event: InputEvent, context: Context) {
             await mutex.unlock();
         }
 
-        //Move this to new last step of workflow
-        logger.info("Deleting media file from temp location");
-        await s3.deleteObject({ Bucket: event.input.inputFile.bucket, Key: event.input.inputFile.key }).promise();
     } catch (error) {
         logger.error("Failed to register thumbnail");
         logger.error(error);

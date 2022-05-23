@@ -51,7 +51,7 @@
             </tr>
             <tr>
               <td>Framerate:</td>
-              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.frameRate}}</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.frameRate | number: "1.0-2"}}</td>
             </tr>
             <tr>
               <td>Aspect Ratio:</td>

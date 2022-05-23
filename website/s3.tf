@@ -10,6 +10,17 @@ resource "aws_s3_bucket" "website" {
   bucket        = local.website_bucket_name
   force_destroy = true
 
+  lifecycle {
+    ignore_changes = [
+      acl,
+      policy,
+      server_side_encryption_configuration,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_policy" "website" {
+  bucket = aws_s3_bucket.website.id
   policy = jsonencode({
     Version   = "2012-10-17"
     Statement = [
@@ -19,10 +30,10 @@ resource "aws_s3_bucket" "website" {
         Principal = {
           AWS = aws_cloudfront_origin_access_identity.website.iam_arn
         }
-        Action    = [
+        Action = [
           "s3:GetObject"
         ]
-        Resource  = [
+        Resource = [
           "arn:aws:s3:::${local.website_bucket_name}/*"
         ]
       },
@@ -58,18 +69,11 @@ resource "aws_s3_bucket" "website" {
       }
     ]
   })
-
-  lifecycle {
-    ignore_changes = [
-      acl,
-      server_side_encryption_configuration,
-    ]
-  }
 }
 
 resource "aws_s3_bucket_acl" "website" {
   bucket = aws_s3_bucket.website.id
-  acl = "private"
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
@@ -100,7 +104,7 @@ resource "aws_s3_bucket_metric" "website" {
 # website config
 ##################
 
-resource "aws_s3_bucket_object" "config" {
+resource "aws_s3_object" "config" {
   bucket           = aws_s3_bucket.website.id
   key              = "config.json"
   content_encoding = "application/json"
@@ -111,8 +115,8 @@ resource "aws_s3_bucket_object" "config" {
       UserPoolId = aws_cognito_user_pool.main.id
       ClientId   = aws_cognito_user_pool_client.main.id
     }
-    MediaBucket           = var.media_bucket.id
-    RestApiUrl            = var.mam_service.rest_api_url
-    WebSocketUrl          = var.mam_service.websocket_url
+    MediaBucket  = var.media_bucket.id
+    RestApiUrl   = var.mam_service.rest_api_url
+    WebSocketUrl = var.mam_service.websocket_url
   })
 }

@@ -27,8 +27,8 @@ task generateTerraformWebsiteTF {
   outputs.file websiteFileTfJson
 
   doLast {
-    def aws_s3_bucket_object = []
-    def resource = ["aws_s3_bucket_object": aws_s3_bucket_object]
+    def aws_s3_object = []
+    def resource = ["aws_s3_object": aws_s3_object]
     def data = ["resource": resource]
 
     websiteDir.traverse { f ->
@@ -76,7 +76,7 @@ task generateTerraformWebsiteTF {
           "${filename}": props,
         ]
 
-        aws_s3_bucket_object.add(object)
+        aws_s3_object.add(object)
       }
     }
 

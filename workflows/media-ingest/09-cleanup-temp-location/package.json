@@ -1,18 +1,15 @@
 {
-    "name": "06-register-thumbnail",
+    "name": "09-cleanup-temp-location",
     "version": "0.0.0",
     "description": "",
     "private": true,
     "license": "Apache-2.0",
     "dependencies": {
         "@mcma/aws-client": "0.14.4",
-        "@mcma/aws-dynamodb": "0.14.4",
         "@mcma/aws-logger": "0.14.4",
         "@mcma/aws-s3": "0.14.4",
         "@mcma/client": "0.14.4",
         "@mcma/core": "0.14.4",
-        "@mcma/data": "0.14.4",
-        "axios": "^0.26.0",
         "aws-sdk": "^2.1000.0",
         "aws-xray-sdk": "^3.3.4"
     },

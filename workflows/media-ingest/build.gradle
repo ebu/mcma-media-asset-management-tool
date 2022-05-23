@@ -7,4 +7,5 @@ task build {
     dependsOn "06-register-thumbnail:build"
     dependsOn "07-create-web-version:build"
     dependsOn "08-register-web-version:build"
+    dependsOn "09-cleanup-temp-location:build"
 }

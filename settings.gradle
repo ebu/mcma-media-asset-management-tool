@@ -25,4 +25,5 @@ include "deployment",
         "workflows:media-ingest:05-create-thumbnail",
         "workflows:media-ingest:06-register-thumbnail",
         "workflows:media-ingest:07-create-web-version",
-        "workflows:media-ingest:08-register-web-version"
+        "workflows:media-ingest:08-register-web-version",
+        "workflows:media-ingest:09-cleanup-temp-location"

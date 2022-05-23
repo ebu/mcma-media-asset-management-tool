@@ -167,11 +167,19 @@ function createVideoTechnicalMetadata(ebucoreVideoFormat: any): VideoTechnicalMe
     let frameRate = Number.parseFloat(ebucoreVideoFormat[0]?.["ebucore:frameRate"]?.[0]?.["#value"]);
     if (Number.isNaN(frameRate)) {
         frameRate = undefined;
+    } else {
+        const factorNumerator = Number.parseInt(ebucoreVideoFormat[0]?.["ebucore:frameRate"]?.[0]?.["@factorNumerator"]);
+        const factorDenominator = Number.parseInt(ebucoreVideoFormat[0]?.["ebucore:frameRate"]?.[0]?.["@factorDenominator"]);
+        if (!Number.isNaN(factorNumerator) && !Number.isNaN(factorDenominator)) {
+            frameRate = (frameRate * factorNumerator / factorDenominator);
+        }
     }
 
     let bitRate = Number.parseInt(ebucoreVideoFormat[0]?.["ebucore:bitRate"]?.[0]?.["#value"]);
     if (Number.isNaN(bitRate)) {
         bitRate = undefined;
+    } else {
+        bitRate = Math.ceil(bitRate / 1000);
     }
 
     let bitRateMode = BitRateMode.Unknown;
@@ -195,6 +203,14 @@ function createVideoTechnicalMetadata(ebucoreVideoFormat: any): VideoTechnicalMe
         switch (scanTypeStr) {
             case "progressive":
                 scanType = VideoScanType.ProgressiveFrame;
+                break;
+            case "interlaced":
+                const scanningOrder = ebucoreVideoFormat[0]?.["ebucore:scanningOrder"]?.[0]?.["#value"];
+                if (scanningOrder !== "top") {
+                    scanType = VideoScanType.InterlacedLowerFieldFirst
+                } else {
+                    scanType = VideoScanType.InterlacedUpperFieldFirst
+                }
                 break;
             default:
                 throw new McmaException(`Unexpected video scan type '${scanTypeStr}'`);
@@ -228,6 +244,8 @@ function createAudioTechnicalMetadata(ebucoreAudioFormat: any): AudioTechnicalMe
     let bitRate = Number.parseInt(ebucoreAudioFormat[0]?.["ebucore:bitRate"]?.[0]?.["#value"]);
     if (Number.isNaN(bitRate)) {
         bitRate = undefined;
+    } else {
+        bitRate = Math.ceil(bitRate / 1000);
     }
 
     let bitRateMode = BitRateMode.Unknown;

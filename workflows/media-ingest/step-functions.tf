@@ -12,7 +12,7 @@ resource "aws_iam_role" "workflow" {
         Principal = {
           Service = "states.${var.aws_region}.amazonaws.com"
         }
-        Effect    = "Allow"
+        Effect = "Allow"
       }
     ]
   })
@@ -38,6 +38,7 @@ resource "aws_iam_role_policy" "workflow" {
           aws_lambda_function.step_06_register_thumbnail.arn,
           aws_lambda_function.step_07_create_web_version.arn,
           aws_lambda_function.step_08_register_web_version.arn,
+          aws_lambda_function.step_09_cleanup_temp_location.arn,
         ]
       }
     ]
@@ -55,21 +56,21 @@ resource "aws_sfn_state_machine" "workflow" {
     Comment = "Media Ingest"
     StartAt = "Validate input"
     States  = {
-      "Validate input"             = {
+      "Validate input" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_01_validate_input.arn
         ResultPath = null
         Next       = "Create media asset"
       }
-      "Create media asset"         = {
+      "Create media asset" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_02_create_media_asset.arn
         ResultPath = "$.data"
         Next       = "Extract technical metadata"
       }
       "Extract technical metadata" = {
-        Type       = "Parallel"
-        Branches   = [
+        Type     = "Parallel"
+        Branches = [
           {
             StartAt = "Start AME job"
             States  = {
@@ -87,7 +88,7 @@ resource "aws_sfn_state_machine" "workflow" {
                 Type           = "Task"
                 Resource       = aws_sfn_activity.step_03_extract_technical_metadata.id
                 ResultPath     = "$.data.technicalMetadataJobId"
-                TimeoutSeconds = 3600
+                TimeoutSeconds = 900
                 End            = true
               }
             }
@@ -96,15 +97,15 @@ resource "aws_sfn_state_machine" "workflow" {
         OutputPath = "$[1]"
         Next       = "Register original media"
       }
-      "Register original media"    = {
+      "Register original media" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_04_register_original_media.arn
         ResultPath = "$.data.createWebVersion"
         Next       = "Create thumbnail"
       }
-      "Create thumbnail"           = {
-        Type       = "Parallel"
-        Branches   = [
+      "Create thumbnail" = {
+        Type     = "Parallel"
+        Branches = [
           {
             StartAt = "Start create thumbnail job"
             States  = {
@@ -122,7 +123,7 @@ resource "aws_sfn_state_machine" "workflow" {
                 Type           = "Task"
                 Resource       = aws_sfn_activity.step_05_create_thumbnail.id
                 ResultPath     = "$.data.createThumbnailJobId"
-                TimeoutSeconds = 3600
+                TimeoutSeconds = 900
                 End            = true
               }
             }
@@ -131,13 +132,13 @@ resource "aws_sfn_state_machine" "workflow" {
         OutputPath = "$[1]"
         Next       = "Register thumbnail"
       }
-      "Register thumbnail"         = {
+      "Register thumbnail" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_06_register_thumbnail.arn
         ResultPath = null
         Next       = "Create web version of media?"
       }
-      "Create web version of media?"           = {
+      "Create web version of media?" = {
         Type    = "Choice",
         Choices = [
           {
@@ -146,11 +147,11 @@ resource "aws_sfn_state_machine" "workflow" {
             Next          = "Transcode media"
           },
         ]
-        Default = "Success"
+        Default = "Cleanup temp location"
       }
-      "Transcode media"            = {
-        Type       = "Parallel"
-        Branches   = [
+      "Transcode media" = {
+        Type     = "Parallel"
+        Branches = [
           {
             StartAt = "Start create web version job"
             States  = {
@@ -167,8 +168,8 @@ resource "aws_sfn_state_machine" "workflow" {
               "Wait for create web version job completion" = {
                 Type           = "Task"
                 Resource       = aws_sfn_activity.step_07_create_web_version.id
-                ResultPath     = "$.data.mediaTranscodeJob"
-                TimeoutSeconds = 3600
+                ResultPath     = "$.data.transcodeJobId"
+                TimeoutSeconds = 900
                 End            = true
               }
             }
@@ -177,14 +178,17 @@ resource "aws_sfn_state_machine" "workflow" {
         OutputPath = "$[1]"
         Next       = "Register web version of media"
       }
-      "Register web version of media"  = {
+      "Register web version of media" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_08_register_web_version.arn
         ResultPath = null
-        Next       = "Success"
+        Next       = "Cleanup temp location"
       }
-      "Success"                    = {
-        Type = "Succeed"
+      "Cleanup temp location" = {
+        Type       = "Task"
+        Resource   = aws_lambda_function.step_09_cleanup_temp_location.arn
+        ResultPath = null
+        End        = true
       }
     }
   })

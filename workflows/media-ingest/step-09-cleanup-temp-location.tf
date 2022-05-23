@@ -1,9 +1,9 @@
 #################################
-#  Step 8 : Transcode Media
+#  Step 9 : Register Transcoded Media
 #################################
 
-resource "aws_iam_role" "step_07_create_web_version" {
-  name               = format("%.64s", "${var.prefix}-${var.aws_region}-07-create-web-version")
+resource "aws_iam_role" "step_09_cleanup_temp_location" {
+  name               = format("%.64s", "${var.prefix}-${var.aws_region}-09-cleanup-temp-location")
   path               = var.iam_role_path
   assume_role_policy = jsonencode({
     Version   = "2012-10-17"
@@ -22,9 +22,9 @@ resource "aws_iam_role" "step_07_create_web_version" {
   tags = var.tags
 }
 
-resource "aws_iam_role_policy" "step_07_create_web_version" {
-  name   = aws_iam_role.step_07_create_web_version.name
-  role   = aws_iam_role.step_07_create_web_version.id
+resource "aws_iam_role_policy" "step_09_cleanup_temp_location" {
+  name   = aws_iam_role.step_09_cleanup_temp_location.name
+  role   = aws_iam_role.step_09_cleanup_temp_location.id
   policy = jsonencode({
     Version   = "2012-10-17"
     Statement = [
@@ -44,7 +44,7 @@ resource "aws_iam_role_policy" "step_07_create_web_version" {
         ]
         Resource = [
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_07_create_web_version.function_name}:*",
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_09_cleanup_temp_location.function_name}:*",
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*",
         ]
       },
@@ -61,36 +61,21 @@ resource "aws_iam_role_policy" "step_07_create_web_version" {
         Resource = "*"
       },
       {
-        Sid      = "AllowInvokingApiGateway"
+        Sid      = "AllowReadingWritingMediaBucket"
         Effect   = "Allow"
-        Action   = "execute-api:Invoke"
-        Resource = [
-          "${var.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/GET/*",
-          "${var.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-        ]
-      },
-      {
-        Sid      = "AllowReadingFromMediaBucket"
-        Effect   = "Allow"
-        Action   = "s3:GetObject"
+        Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
         Resource = "${var.media_bucket.arn}/*"
-      },
-      {
-        Sid      = "AllowGettingActivityTask"
-        Effect   = "Allow"
-        Action   = "states:GetActivityTask"
-        Resource = aws_sfn_activity.step_07_create_web_version.id
       },
     ]
   })
 }
 
-resource "aws_lambda_function" "step_07_create_web_version" {
-  filename         = "${path.module}/07-create-web-version/build/dist/lambda.zip"
-  function_name    = format("%.64s", "${var.prefix}-07-create-web-version")
-  role             = aws_iam_role.step_07_create_web_version.arn
+resource "aws_lambda_function" "step_09_cleanup_temp_location" {
+  filename         = "${path.module}/09-cleanup-temp-location/build/dist/lambda.zip"
+  function_name    = format("%.64s", "${var.prefix}-09-cleanup-temp-location")
+  role             = aws_iam_role.step_09_cleanup_temp_location.arn
   handler          = "index.handler"
-  source_code_hash = filebase64sha256("${path.module}/07-create-web-version/build/dist/lambda.zip")
+  source_code_hash = filebase64sha256("${path.module}/09-cleanup-temp-location/build/dist/lambda.zip")
   runtime          = "nodejs14.x"
   timeout          = "900"
   memory_size      = "2048"
@@ -99,22 +84,13 @@ resource "aws_lambda_function" "step_07_create_web_version" {
 
   environment {
     variables = {
-      LogGroupName     = var.log_group.name
-      ServicesUrl      = var.service_registry.services_url
-      ServicesAuthType = var.service_registry.auth_type
-      ActivityArn      = aws_sfn_activity.step_07_create_web_version.id
+      LogGroupName = var.log_group.name
     }
   }
 
   tracing_config {
     mode = "Active"
   }
-
-  tags = var.tags
-}
-
-resource "aws_sfn_activity" "step_07_create_web_version" {
-  name = "${var.prefix}-07-create-web-version"
 
   tags = var.tags
 }

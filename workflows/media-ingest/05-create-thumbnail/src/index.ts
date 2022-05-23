@@ -62,9 +62,9 @@ export async function handler(event: InputEvent, context: Context) {
         const notificationUrl = event.notificationEndpoint.httpEndpoint + "?taskToken=" + encodeURIComponent(taskToken);
         logger.info(`NotificationUrl: ${notificationUrl}`);
 
-        const [jobProfile] = await resourceManager.query(JobProfile, { name: "ExtractThumbnail" });
+        const [jobProfile] = await resourceManager.query(JobProfile, { name: "FFmpegExtractThumbnail" });
         if (!jobProfile) {
-            throw new McmaException("JobProfile 'ExtractThumbnail' not found.");
+            throw new McmaException("JobProfile 'FFmpegExtractThumbnail' not found.");
         }
 
         const inputFile = event.input.inputFile;
@@ -77,7 +77,10 @@ export async function handler(event: InputEvent, context: Context) {
         let job = new TransformJob({
             jobProfileId: jobProfile.id,
             jobInput: new JobParameterBag({
-                inputFile
+                inputFile,
+                width: 320,
+                aspectRatio: "16:9",
+                autoPadding: true,
             }),
             notificationEndpoint: new NotificationEndpoint({
                 httpEndpoint: notificationUrl

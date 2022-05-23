@@ -117,7 +117,7 @@ module "job_processor" {
 #########################
 
 module "mediainfo_ame_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.0.2/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.0.3/module.zip"
 
   prefix = "${var.global_prefix}-mediainfo-ame-service"
 
@@ -139,7 +139,7 @@ module "mediainfo_ame_service" {
 #########################
 
 module "ffmpeg_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.5/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.7/module.zip"
 
   prefix = "${var.global_prefix}-ffmpeg-service"
 
@@ -147,7 +147,11 @@ module "ffmpeg_service" {
   aws_region = var.aws_region
 
   service_registry = module.service_registry
-  job_processor    = module.job_processor
+
+  execute_api_arns = [
+    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+  ]
 
   log_group = aws_cloudwatch_log_group.main
 }
@@ -157,7 +161,7 @@ module "ffmpeg_service" {
 #########################
 
 module "aws_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.6/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.0.7/module.zip"
 
   prefix = "${var.global_prefix}-aws-ai-service"
 
@@ -179,7 +183,7 @@ module "aws_ai_service" {
 ########################################
 
 module "stepfunctions_workflow_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.0.4/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.0.6/module.zip"
 
   prefix = "${var.global_prefix}-stepfunctions-workflow-service"
 

@@ -7,9 +7,25 @@ locals {
 ###########
 
 resource "aws_s3_bucket" "media" {
-  bucket              = local.media_bucket_name
-  force_destroy       = true
+  bucket        = local.media_bucket_name
+  force_destroy = true
 
+
+
+  lifecycle {
+    ignore_changes = [
+      acceleration_status,
+      acl,
+      cors_rule,
+      lifecycle_rule,
+      policy,
+      server_side_encryption_configuration,
+    ]
+  }
+}
+
+resource "aws_s3_bucket_policy" "media" {
+  bucket = aws_s3_bucket.media.id
   policy = jsonencode({
     Version   = "2012-10-17"
     Statement = [
@@ -45,16 +61,6 @@ resource "aws_s3_bucket" "media" {
       }
     ]
   })
-
-  lifecycle {
-    ignore_changes = [
-      acceleration_status,
-      acl,
-      cors_rule,
-      lifecycle_rule,
-      server_side_encryption_configuration,
-    ]
-  }
 }
 
 resource "aws_s3_bucket_acl" "media" {
