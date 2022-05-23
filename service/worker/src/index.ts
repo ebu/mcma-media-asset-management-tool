@@ -9,8 +9,8 @@ import { awsV4Auth } from "@mcma/aws-client";
 
 import { DataController } from "@local/data";
 
-import { startWorkflow } from "./operations";
-import { processNotification } from "./operations/process-notification";
+import { deleteAsset, processNotification, startWorkflow } from "./operations";
+import { S3 } from "aws-sdk";
 
 const { LogGroupName, PublicUrl, TableName } = process.env;
 
@@ -32,6 +32,7 @@ const providerCollection = new ProviderCollection({
 
 const worker =
     new Worker(providerCollection)
+        .addOperation("DeleteAsset", deleteAsset)
         .addOperation("ProcessNotification", processNotification)
         .addOperation("StartWorkflow", startWorkflow);
 
@@ -45,7 +46,8 @@ export async function handler(event: WorkerRequestProperties, context: Context) 
 
         await worker.doWork(new WorkerRequest(event, logger), {
             awsRequestId: context.awsRequestId,
-            dataController
+            dataController,
+            s3: new AWS.S3(),
         });
     } catch (error) {
         logger.error("Error occurred when handling operation '" + event.operationName + "'");
@@ -54,4 +56,10 @@ export async function handler(event: WorkerRequestProperties, context: Context) 
         logger.functionEnd(context.awsRequestId);
         await loggerProvider.flush();
     }
+}
+
+export interface WorkerContext {
+    awsRequestId: string,
+    dataController: DataController,
+    s3: S3,
 }

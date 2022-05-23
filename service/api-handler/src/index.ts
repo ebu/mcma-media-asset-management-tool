@@ -17,7 +17,7 @@ const dbTableProvider = new DynamoDbTableProvider(getDynamoDbOptions(false), new
 const workerInvoker = new LambdaWorkerInvoker(new AWS.Lambda());
 
 const routes = new McmaApiRouteCollection();
-routes.addRoutes(buildAssetRoutes(dbTableProvider, s3));
+routes.addRoutes(buildAssetRoutes(dbTableProvider, workerInvoker, s3));
 routes.addRoutes(buildAssetEssenceRoutes(dbTableProvider, s3));
 routes.addRoutes(buildAssetWorkflowRoutes(dbTableProvider));
 routes.addRoutes(buildWorkflowRoutes(dbTableProvider, workerInvoker));

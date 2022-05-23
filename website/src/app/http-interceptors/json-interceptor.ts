@@ -33,7 +33,7 @@ export class JsonHttpInterceptor implements HttpInterceptor {
   }
 
   private parseResponse(event: HttpEvent<any>): HttpEvent<any> {
-    return event instanceof HttpResponse
+    return event instanceof HttpResponse && event.body
       ? event.clone({ body: this.jsonParser.parse(event.body) })
       : event;
   }

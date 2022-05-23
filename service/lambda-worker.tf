@@ -91,6 +91,12 @@ resource "aws_iam_role_policy" "worker" {
           "${var.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
         ]
       },
+      {
+        Sid      = "AllowDeletingFromMediaBucket"
+        Effect   = "Allow"
+        Action   = "s3:DeleteObject"
+        Resource = "${var.media_bucket.arn}/*"
+      },
     ],
     var.xray_tracing_enabled ?
     [

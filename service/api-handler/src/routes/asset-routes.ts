@@ -5,6 +5,7 @@ import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 
 import { MediaAsset } from "@local/model";
 import { signUrl } from "./utils";
+import { getWorkerFunctionId, WorkerInvoker } from "@mcma/worker-invoker";
 
 function signMediaAssetUrls(mediaAsset: MediaAsset, s3: S3) {
     if (mediaAsset.thumbnailUrl) {
@@ -15,7 +16,7 @@ function signMediaAssetUrls(mediaAsset: MediaAsset, s3: S3) {
     }
 }
 
-export function buildAssetRoutes(dbTableProvider: DynamoDbTableProvider, s3: S3) {
+export function buildAssetRoutes(dbTableProvider: DynamoDbTableProvider, workerInvoker: WorkerInvoker, s3: S3) {
     const routes = new DefaultRouteCollection(dbTableProvider, MediaAsset, "/assets");
 
     routes.remove("create");
@@ -28,6 +29,18 @@ export function buildAssetRoutes(dbTableProvider: DynamoDbTableProvider, s3: S3)
         for (const mediaAsset of queryResults.results) {
             signMediaAssetUrls(mediaAsset, s3);
         }
+    };
+
+    routes.delete.onCompleted = async function(requestContext, resource) {
+        await workerInvoker.invoke(
+            getWorkerFunctionId(requestContext.configVariables),
+            {
+                operationName: "DeleteAsset",
+                input: {
+                    mediaAsset: resource
+                },
+            }
+        );
     };
 
     return routes;

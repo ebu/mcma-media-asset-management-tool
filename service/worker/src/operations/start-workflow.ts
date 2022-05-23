@@ -3,11 +3,11 @@ import { v4 as uuidv4 } from "uuid";
 import { ProviderCollection, WorkerRequest } from "@mcma/worker";
 import { JobParameterBag, JobStatus, McmaException, McmaTracker, NotificationEndpoint, ProblemDetail, WorkflowJob } from "@mcma/core";
 import { MediaAsset, MediaAssetWorkflow, MediaWorkflowProperties, MediaWorkflowType } from "@local/model";
-import { DataController } from "@local/data";
 
 import { getJobProfileId } from "./utils";
+import { WorkerContext } from "../index";
 
-export async function startWorkflow(providers: ProviderCollection, workerRequest: WorkerRequest, context: { requestId: string, dataController: DataController }) {
+export async function startWorkflow(providers: ProviderCollection, workerRequest: WorkerRequest, context: WorkerContext) {
     const logger = workerRequest.logger;
     const dataController = context.dataController;
     const resourceManager = providers.resourceManagerProvider.get();
