@@ -9,6 +9,8 @@ import { DataOperation } from "../../services/data/data-update";
 import { MatDialog } from "@angular/material/dialog";
 import { DialogRunWorkflowComponent } from "../../dialogs/dialog-run-workflow/dialog-run-workflow.component";
 import { DialogAssetDeleteComponent } from "../../dialogs/dialog-asset-delete/dialog-asset-delete.component";
+import { MatTabChangeEvent } from "@angular/material/tabs";
+import { AssetWorkflowsComponent } from "../../components/asset-workflows/asset-workflows.component";
 
 @Component({
   selector: "app-asset-view",
@@ -16,7 +18,6 @@ import { DialogAssetDeleteComponent } from "../../dialogs/dialog-asset-delete/di
   styleUrls: ["./asset-view.component.scss"]
 })
 export class AssetViewComponent implements OnInit, AfterViewInit, OnDestroy {
-
   @ViewChild("container")
   public container: ElementRef | undefined;
 
@@ -25,6 +26,8 @@ export class AssetViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild("canvas")
   public canvas: ElementRef | undefined;
+
+  @ViewChild(AssetWorkflowsComponent) workflows: AssetWorkflowsComponent | undefined;
 
   asset: MediaAsset | undefined;
 
@@ -98,4 +101,7 @@ export class AssetViewComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  tabChange(event: MatTabChangeEvent) {
+    this.workflows?.setVisible(event.index === 0);
+  }
 }

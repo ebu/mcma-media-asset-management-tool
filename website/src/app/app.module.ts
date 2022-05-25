@@ -3,6 +3,7 @@ import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientModule } from "@angular/common/http";
 import { ReactiveFormsModule } from "@angular/forms";
+import { NgChartsModule } from 'ng2-charts';
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
@@ -21,6 +22,7 @@ import { AsModule, DurationModule, FilesizeModule } from "./pipes";
 import { AwsCelebrityRecognitionComponent } from "./components/aws-celebrity-recognition/aws-celebrity-recognition.component";
 import { AwsTranscriptionComponent } from './components/aws-transcription/aws-transcription.component';
 import { AwsLabelDetectionComponent } from './components/aws-label-detection/aws-label-detection.component';
+import { AwsFaceDetectionComponent } from './components/aws-face-detection/aws-face-detection.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +38,7 @@ import { AwsLabelDetectionComponent } from './components/aws-label-detection/aws
     AwsCelebrityRecognitionComponent,
     AwsTranscriptionComponent,
     AwsLabelDetectionComponent,
+    AwsFaceDetectionComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -48,6 +51,7 @@ import { AwsLabelDetectionComponent } from './components/aws-label-detection/aws
     AsModule,
     DurationModule,
     FilesizeModule,
+    NgChartsModule,
   ],
   providers: [
     httpInterceptorProviders

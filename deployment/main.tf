@@ -202,6 +202,7 @@ module "stepfunctions_workflow_service" {
   workflows = [
     module.media_ingest_workflow.workflow_definition,
     module.aws_celebrity_recognition.workflow_definition,
+    module.aws_face_detection.workflow_definition,
     module.aws_label_detection.workflow_definition,
     module.aws_transcription.workflow_definition,
   ]
@@ -228,6 +229,23 @@ module "aws_celebrity_recognition" {
   source = "../workflows/aws-celebrity-recognition"
 
   prefix = "${var.global_prefix}-wf-aws-celebrity-recognition"
+
+  aws_account_id = data.aws_caller_identity.current.account_id
+  aws_region     = var.aws_region
+
+  service_registry = module.service_registry
+  job_processor    = module.job_processor
+  mam_service      = module.service
+
+  media_bucket = aws_s3_bucket.media
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
+module "aws_face_detection" {
+  source = "../workflows/aws-face-detection"
+
+  prefix = "${var.global_prefix}-wf-aws-face-detection"
 
   aws_account_id = data.aws_caller_identity.current.account_id
   aws_region     = var.aws_region

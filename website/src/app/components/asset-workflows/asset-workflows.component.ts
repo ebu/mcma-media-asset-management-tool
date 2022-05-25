@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { MatSelectionListChange } from "@angular/material/list";
 import { ActivatedRoute } from "@angular/router";
 import { Subscription } from "rxjs";
@@ -9,6 +9,7 @@ import { MediaAssetWorkflow, MediaWorkflow } from "@local/model";
 import { DataService, LoggerService } from "../../services";
 import { DataOperation } from "../../services/data/data-update";
 import { JobStatus } from "@mcma/core";
+import { AwsFaceDetectionComponent } from "../aws-face-detection/aws-face-detection.component";
 
 @Component({
   selector: "app-asset-workflows",
@@ -16,6 +17,8 @@ import { JobStatus } from "@mcma/core";
   styleUrls: ["./asset-workflows.component.scss"]
 })
 export class AssetWorkflowsComponent implements OnInit, OnDestroy {
+  @ViewChild(AwsFaceDetectionComponent) awsFacesDetection: AwsFaceDetectionComponent | undefined;
+
   assetGuid: string | undefined;
   mediaAssetWorkflows: MediaAssetWorkflow[] = [];
   selectedMediaAssetWorkflow: MediaAssetWorkflow | undefined;
@@ -145,5 +148,9 @@ export class AssetWorkflowsComponent implements OnInit, OnDestroy {
 
   setChildLoading(isLoading: boolean) {
     this.isChildLoading = isLoading;
+  }
+
+  setVisible(visible: boolean) {
+    this.awsFacesDetection?.setVisible(visible);
   }
 }

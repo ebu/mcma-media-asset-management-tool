@@ -24,12 +24,13 @@
     </div>
   </div>
   <mat-tab-group class="center-container"
-                 animationDuration="0ms">
-    <mat-tab label="Files">
-      <app-asset-files></app-asset-files>
-    </mat-tab>
+                 animationDuration="0ms"
+                 (selectedTabChange)="tabChange($event)">
     <mat-tab label="Workflows">
       <app-asset-workflows></app-asset-workflows>
+    </mat-tab>
+    <mat-tab label="Files">
+      <app-asset-files></app-asset-files>
     </mat-tab>
   </mat-tab-group>
   <div class="bottom-container">

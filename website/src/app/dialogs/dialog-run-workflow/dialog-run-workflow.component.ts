@@ -39,8 +39,7 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
 
     switch (this.selectedWorkflowType) {
       case MediaWorkflowType.AwsCelebrityRecognition:
-        acceptedFileExtensions.push("mp4");
-        break;
+      case MediaWorkflowType.AwsFaceDetection:
       case MediaWorkflowType.AwsLabelDetection:
         acceptedFileExtensions.push("mp4");
         break;

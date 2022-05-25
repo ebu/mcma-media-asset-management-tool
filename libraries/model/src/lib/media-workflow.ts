@@ -3,6 +3,7 @@ import { JobStatus, McmaResource, McmaResourceProperties, ProblemDetail, Problem
 export enum MediaWorkflowType {
     MediaIngest = "MediaIngest",
     AwsCelebrityRecognition = "AwsCelebrityRecognition",
+    AwsFaceDetection = "AwsFaceDetection",
     AwsLabelDetection = "AwsLabelDetection",
     AwsTranscription = "AwsTranscription",
 }

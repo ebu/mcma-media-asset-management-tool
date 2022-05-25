@@ -1,5 +1,6 @@
 task build {
     dependsOn "aws-celebrity-recognition:build"
+    dependsOn "aws-face-detection:build"
     dependsOn "aws-label-detection:build"
     dependsOn "aws-transcription:build"
     dependsOn "media-ingest:build"

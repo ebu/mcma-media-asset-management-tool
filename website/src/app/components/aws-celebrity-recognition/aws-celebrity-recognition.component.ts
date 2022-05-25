@@ -5,6 +5,7 @@ import { DataService, DrawHandler, LoggerService, VideoService } from "../../ser
 import { mergeMap, switchMap } from "rxjs/operators";
 import { from, Subscription } from "rxjs";
 import { CelebrityDetail, CelebrityRecognition, GetCelebrityRecognitionResponse } from "aws-sdk/clients/rekognition";
+import { binarySearch, drawLabeledBox, getColor } from "../utils";
 
 export interface CelebrityInfo {
   id: string,
@@ -30,8 +31,6 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
 
   celebrities: CelebrityInfo[] = [];
   displayedColumns: string[] = ["color", "name", "appearances", "confidence"];
-
-  private readonly colors = [ "#ec3445", "#fcdd30", "#51bc37", "#1582fd", "#733294", "#fb761f", "#ab526b", "#cdb380", "#005f6b", "#f02475", "#aab3ab", "#607848", "#ff4e50", "#40c0cb", "#e1edb9", "#d3ce3d", "#5e8c6a", "#f0a830", "#2a2829", "#ff8c94", "#5d4157", "#6a4a3c", "#bef202", "#f9f2e7"];
 
   private celebrityData: Map<string, CelebrityRecognition[]> = new Map<string, CelebrityRecognition[]>();
   private mediaEssenceSubscription: Subscription | undefined;
@@ -108,7 +107,7 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
               this.celebrities.push({
                 id: celebrityId,
                 name: celebrity.Celebrity?.Name ?? "",
-                color: this.colors[i % this.colors.length],
+                color: getColor(i),
                 url: celebrity.Celebrity?.Urls?.[0] ?? "",
                 appearances: appearances,
                 confidence: "",
@@ -172,24 +171,9 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
 
     const celebrityIds = [...this.celebrityData.keys()];
 
-    celebrityDetails.forEach(celebrityDetail => {
-      const color = this.colors[celebrityIds.indexOf(celebrityDetail.Id!) % this.colors.length];
-      this.drawCelebrity(celebrityDetail, color, context, width, height);
-    });
-  }
-
-  private drawCelebrity(celebrity: CelebrityDetail, color: string, context: CanvasRenderingContext2D, width: number, height: number) {
-    const l = (celebrity.Face?.BoundingBox?.Left ?? -1) * width;
-    const t = (celebrity.Face?.BoundingBox?.Top ?? -1) * height;
-    const w = (celebrity.Face?.BoundingBox?.Width ?? -1) * width;
-    const h = (celebrity.Face?.BoundingBox?.Height ?? -1) * height;
-
-    if (l >= 0 && t >= 0 && w >= 0 && h >= 0) {
-      context.beginPath();
-      context.strokeStyle = color;
-      context.lineWidth = 3;
-      context.rect(l, t, w, h);
-      context.stroke();
+    for (const celebrityDetail of celebrityDetails) {
+      const color = getColor(celebrityIds.indexOf(celebrityDetail.Id!));
+      drawLabeledBox(celebrityDetail.Name!, color, celebrityDetail.Face!.BoundingBox!, context, width, height);
     }
   }
 
@@ -213,17 +197,4 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
   seekVideo(timestamp: number) {
     this.videoService.seek(timestamp);
   }
-}
-
-function binarySearch<T>(array: Array<T>, pred: (e: T) => boolean): number {
-  let lo = -1, hi = array.length;
-  while (1 + lo < hi) {
-    const mi = lo + ((hi - lo) >> 1);
-    if (pred(array[mi])) {
-      hi = mi;
-    } else {
-      lo = mi;
-    }
-  }
-  return hi;
 }

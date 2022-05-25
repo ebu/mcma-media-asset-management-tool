@@ -4,9 +4,10 @@ import { MediaAssetWorkflow, MediaEssence } from "@local/model";
 import { DataService, DrawHandler, LoggerService, VideoService } from "../../services";
 import { from, Subscription } from "rxjs";
 import { mergeMap, switchMap } from "rxjs/operators";
-import { CelebrityDetail, GetLabelDetectionResponse, LabelDetection } from "aws-sdk/clients/rekognition";
+import { GetLabelDetectionResponse, LabelDetection } from "aws-sdk/clients/rekognition";
 import { Rekognition } from "aws-sdk";
 import { SelectionModel } from "@angular/cdk/collections";
+import { binarySearch, ColorPalette, drawLabeledBox, getColor } from "../utils";
 
 export interface LabelInfo {
   position: number,
@@ -32,8 +33,6 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
   labels: LabelInfo[] = [];
   selection = new SelectionModel<LabelInfo>(true, []);
   displayedColumns: string[] = ["select", "color", "name", "appearances", "confidence"];
-
-  private readonly colors = ["#ec3445", "#fcdd30", "#51bc37", "#1582fd", "#733294", "#fb761f", "#ab526b", "#cdb380", "#005f6b", "#f02475", "#aab3ab", "#607848", "#ff4e50", "#40c0cb", "#e1edb9", "#d3ce3d", "#5e8c6a", "#f0a830", "#2a2829", "#ff8c94", "#5d4157", "#6a4a3c", "#bef202", "#f9f2e7"];
 
   private labelData: Map<string, LabelDetection[]> = new Map<string, LabelDetection[]>();
   private labelNames: string[] = [];
@@ -96,28 +95,28 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
               const labelData = this.labelData.get(labelName)!;
               labelData.sort((a, b) => a.Timestamp! - b.Timestamp!);
 
-                const appearances: number[] = [];
+              const appearances: number[] = [];
 
-                for (const celebrity of labelData) {
-                  const timestamp = Math.round(celebrity.Timestamp! / 1000);
-                  if (appearances.length === 0) {
+              for (const celebrity of labelData) {
+                const timestamp = Math.round(celebrity.Timestamp! / 1000);
+                if (appearances.length === 0) {
+                  appearances.push(timestamp);
+                } else {
+                  const prevTimestamp = appearances[appearances.length - 1];
+                  if (prevTimestamp + 25 < timestamp) {
                     appearances.push(timestamp);
-                  } else {
-                    const prevTimestamp = appearances[appearances.length - 1];
-                    if (prevTimestamp + 25 < timestamp) {
-                      appearances.push(timestamp);
-                    }
                   }
                 }
+              }
 
-                const label = labelData[0];
-                this.labels.push({
-                  position: i + 1,
-                  name: label.Label?.Name ?? "",
-                  confidence: "",
-                  color: this.colors[i % this.colors.length],
-                  appearances: appearances,
-                });
+              const label = labelData[0];
+              this.labels.push({
+                position: i + 1,
+                name: label.Label?.Name ?? "",
+                confidence: "",
+                color: getColor(i),
+                appearances: appearances,
+              });
             }
 
             this.labels = [...this.labels];
@@ -156,9 +155,9 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
   /** The label for the checkbox on the passed row */
   checkboxLabel(row?: LabelInfo): string {
     if (!row) {
-      return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
+      return `${this.isAllSelected() ? "deselect" : "select"} all`;
     }
-    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position}`;
+    return `${this.selection.isSelected(row) ? "deselect" : "select"} row ${row.position}`;
   }
 
   private setLoading(value: boolean) {
@@ -166,7 +165,7 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
   }
 
   private updateLabelStatistics(visibleLabels: Rekognition.Label[]) {
-    const map = new Map<string, CelebrityDetail>();
+    const map = new Map<string, Rekognition.Label>();
 
     for (const label of visibleLabels) {
       map.set(label.Name!, label);
@@ -204,28 +203,13 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
     const visibleLabels = new Set<string>(this.selection.selected.map(l => l.name));
 
     labels.forEach(label => {
-      const color = this.colors[this.labelNames.indexOf(label.Name!) % this.colors.length];
+      const color = getColor(this.labelNames.indexOf(label.Name!));
       if (visibleLabels.has(label.Name!)) {
         for (const instance of label.Instances!) {
-          this.drawLabel(instance, color, context, width, height);
+          drawLabeledBox(label.Name!, color, instance.BoundingBox!, context, width, height);
         }
       }
     });
-  }
-
-  private drawLabel(labelInstance: Rekognition.Instance, color: string, context: CanvasRenderingContext2D, width: number, height: number) {
-    const l = (labelInstance.BoundingBox?.Left ?? -1) * width;
-    const t = (labelInstance.BoundingBox?.Top ?? -1) * height;
-    const w = (labelInstance.BoundingBox?.Width ?? -1) * width;
-    const h = (labelInstance.BoundingBox?.Height ?? -1) * height;
-
-    if (l >= 0 && t >= 0 && w >= 0 && h >= 0) {
-      context.beginPath();
-      context.strokeStyle = color;
-      context.lineWidth = 3;
-      context.rect(l, t, w, h);
-      context.stroke();
-    }
   }
 
   private findLabelsAtTime(timestamp: number): Rekognition.Label[] {
@@ -248,17 +232,4 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
   seekVideo(timestamp: number) {
     this.videoService.seek(timestamp);
   }
-}
-
-function binarySearch<T>(array: Array<T>, pred: (e: T) => boolean): number {
-  let lo = -1, hi = array.length;
-  while (1 + lo < hi) {
-    const mi = lo + ((hi - lo) >> 1);
-    if (pred(array[mi])) {
-      hi = mi;
-    } else {
-      lo = mi;
-    }
-  }
-  return hi;
 }
