@@ -2,7 +2,7 @@
 
 This project is a reference implementation on how you can leverage MCMA to power your media workflows in the cloud.
 
-## Requirements for running the example
+## Requirements for deploying this project
 * Node.js installed (version ^14.17.4 or higher) and accessible in PATH. See [Node.js website](https://nodejs.org/en/blog/release/v14.17.4/).
 * NPM package 'typescript' (version ^4.3.5 or newer) installed globally (execute `npm install -g typescript`)
 * NPM package '@angular/cli' (version ~13.0.3 or newer) installed globally (execute `npm install -g @angular/cli`)
