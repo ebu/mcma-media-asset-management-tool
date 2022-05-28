@@ -7,7 +7,7 @@ import { mergeMap, switchMap } from "rxjs/operators";
 import { GetLabelDetectionResponse, LabelDetection } from "aws-sdk/clients/rekognition";
 import { Rekognition } from "aws-sdk";
 import { SelectionModel } from "@angular/cdk/collections";
-import { binarySearch, ColorPalette, drawLabeledBox, getColor } from "../utils";
+import { binarySearch, drawLabeledBox, getColor } from "../utils";
 
 export interface LabelInfo {
   position: number,
