@@ -8,7 +8,6 @@ import { MediaWorkflow, MediaWorkflowType } from "@local/model";
 
 import { DialogAssetIngestComponent, DialogUploadComponent } from "../../dialogs";
 import { ConfigService, DataService, LoggerService } from "../../services";
-import { FormValidationUtils } from "../../utils";
 import { S3Locator } from "@mcma/aws-s3";
 import { zip } from "rxjs";
 
@@ -34,7 +33,6 @@ export class AssetAddComponent implements OnInit {
       inputFile: ["",
         Validators.compose([
           Validators.required,
-          FormValidationUtils.fileExtensions(["mp4", "mxf", "mov"]),
         ])
       ],
     });
