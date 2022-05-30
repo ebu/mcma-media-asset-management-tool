@@ -97,8 +97,8 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
 
               const appearances: number[] = [];
 
-              for (const celebrity of labelData) {
-                const timestamp = Math.round(celebrity.Timestamp! / 1000);
+              for (const label of labelData) {
+                const timestamp = label.Timestamp! / 1000;
                 if (appearances.length === 0) {
                   appearances.push(timestamp);
                 } else {

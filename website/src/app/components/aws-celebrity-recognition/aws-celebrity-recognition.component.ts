@@ -92,7 +92,7 @@ export class AwsCelebrityRecognitionComponent implements OnInit, OnChanges, OnDe
               const appearances: number[] = [];
 
               for (const celebrity of celebrityData) {
-                const timestamp = Math.round(celebrity.Timestamp! / 1000);
+                const timestamp = celebrity.Timestamp! / 1000;
                 if (appearances.length === 0) {
                   appearances.push(timestamp);
                 } else {

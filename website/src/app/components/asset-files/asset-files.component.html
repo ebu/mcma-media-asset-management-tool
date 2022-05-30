@@ -59,7 +59,7 @@
             </tr>
             <tr>
               <td>Bit Rate:</td>
-              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.bitRate}}</td>
+              <td>{{(selectedMediaEssence | as : VideoEssence)?.videoTechnicalMetadata?.bitRate}} kbit/s</td>
             </tr>
           </table>
         </div>
@@ -77,11 +77,11 @@
             </tr>
             <tr>
               <td>Sampling Rate:</td>
-              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.samplingRate}}</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.samplingRate}} Hz</td>
             </tr>
             <tr>
               <td>Bit Rate:</td>
-              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.bitRate}}</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.bitRate}} kbit/s</td>
             </tr>
           </table>
         </div>
