@@ -41,6 +41,7 @@ export class DataService {
         map((credentials) => new AwsV4PresignedUrlGenerator(credentials)),
       )
     ).pipe(
+      tap(() => this.logger.info("Connecting Websocket")),
       map(([url, presignedUrlGenerator]) => presignedUrlGenerator.generatePresignedUrl("GET", url)),
       switchMap(url => webSocket(url)),
       retry(),
@@ -54,51 +55,61 @@ export class DataService {
       tap(dataUpdate => this.logger.info(dataUpdate)),
       share(),
     );
+
+    this.websocket$.subscribe(
+      () => {},
+      (error) => {
+        this.logger.error("WebSocket Error:");
+        this.logger.error(error);
+      },
+      () => {
+        this.logger.warn("WebSocket Closed");
+      });
   }
 
-  private getRestApiUrl() {
+  private getRestApiUrl(): Observable<string> {
     return this.config.get<string>("RestApiUrl");
   }
 
-  createWorkflow(workflow: MediaWorkflow) {
+  createWorkflow(workflow: MediaWorkflow): Observable<MediaWorkflow> {
     return this.getRestApiUrl().pipe(
       switchMap(url => this.http.post<MediaWorkflow>(`${url}/workflows`, workflow))
     );
   }
 
-  listMediaWorkflows(pageSize: number, pageStartToken?: string) {
+  listMediaWorkflows(pageSize: number, pageStartToken?: string): Observable<QueryResults<MediaWorkflow>> {
     const params: any = {
       sortBy: "dateCreated",
       sortOrder: "desc",
-      pageSize: pageSize,
+      pageSize,
     };
     if (pageStartToken) {
       params.pageStartToken = pageStartToken;
     }
     return this.getRestApiUrl().pipe(
       switchMap(url => this.http.get<QueryResults<MediaWorkflow>>(`${url}/workflows`, {
-        params: params
+        params
       }))
     );
   }
 
-  listMediaAssets(pageSize: number, pageStartToken?: string) {
+  listMediaAssets(pageSize: number, pageStartToken?: string): Observable<QueryResults<MediaAsset>> {
     const params: any = {
       sortBy: "dateCreated",
       sortOrder: "desc",
-      pageSize: pageSize,
+      pageSize,
     };
     if (pageStartToken) {
       params.pageStartToken = pageStartToken;
     }
     return this.getRestApiUrl().pipe(
       switchMap(url => this.http.get<QueryResults<MediaAsset>>(`${url}/assets`, {
-        params: params
+        params
       }))
     );
   }
 
-  get<T>(url: string) {
+  get<T>(url: string): Observable<T> {
     return this.http.get<T>(url);
   }
 
