@@ -3,7 +3,7 @@ import * as AWSXRay from "aws-xray-sdk-core";
 import { default as axios } from "axios";
 import * as moment from "moment";
 
-import { Job, JobProperties, Logger, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
+import { Job, Logger, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
 import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
 import { buildS3Url, S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
@@ -45,7 +45,7 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(context);
 
         logger.info("Retrieving technical metadata job results");
-        let job = (await resourceManager.get<Job>(event.data.technicalMetadataJobId)) as JobProperties;
+        let job = await resourceManager.get<Job>(event.data.technicalMetadataJobId);
         logger.info(job);
 
         logger.info("Retrieving technical metadata");

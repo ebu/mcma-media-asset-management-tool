@@ -16,7 +16,7 @@ const { MediaBucket, TableName, PublicUrl } = process.env;
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const s3 = new AWS.S3();
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("aws-face-detection-03-register-output", process.env.LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("google-transcription-04-register-output", process.env.LogGroupName);
 const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
 const dataController = new DataController(TableName, PublicUrl, true, new AWS.DynamoDB());
 
@@ -28,6 +28,8 @@ type InputEvent = {
         inputFile?: S3Locator
     }
     data: {
+        doExtractAudio: boolean
+        transformJobId?: string
         aiJobId: string
     }
     tracker?: McmaTracker
@@ -41,12 +43,25 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(event);
         logger.debug(context);
 
-        logger.info("Retrieving AI job results");
-        let job = await resourceManager.get<Job>(event.data.aiJobId);
-        logger.info(job);
+        const outputFiles: S3Locator[] = [];
 
-        logger.info("Copying AI data file(s) to final location");
-        const outputFiles = job.jobOutput.outputFiles as S3Locator[];
+        if (event.data.transformJobId) {
+            logger.info("Retrieving Transform job results");
+            const job = await resourceManager.get<Job>(event.data.transformJobId);
+            logger.info(job);
+
+            logger.info("Copying Transform output file to final location");
+            outputFiles.push(job.jobOutput.outputFile as S3Locator);
+        }
+
+        if (event.data.aiJobId) {
+            logger.info("Retrieving AI job results");
+            let job = await resourceManager.get<Job>(event.data.aiJobId);
+            logger.info(job);
+
+            logger.info("Copying AI data file(s) to final location");
+            outputFiles.push(...(job.jobOutput.outputFiles as S3Locator[]));
+        }
 
         const timestamp = new Date().toISOString().substring(0, 19).replace(/[:-]/g, "").replace("T", "-");
         const essenceIds: string[] = [];
@@ -80,7 +95,7 @@ export async function handler(event: InputEvent, context: Context) {
             const url = await buildS3Url(uploadParams.Bucket, uploadParams.Key, s3);
 
             const locators = [new S3Locator({ url: url })];
-            const tags: string[] = ["AwsFaceDetection"];
+            const tags: string[] = ["GoogleTranscription"];
 
             const essence = await dataController.createMediaEssence(event.input.mediaAssetId, new MediaEssence({
                 filename,

@@ -2,14 +2,14 @@ import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
 import { default as axios } from "axios";
 
-import { Job, JobProperties, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
+import { Job, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
 import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
 import { buildS3Url, S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
 import { awsV4Auth } from "@mcma/aws-client";
 
 const { MediaBucket, TableName, PublicUrl } = process.env;
-import { VideoEssence, VideoTechnicalMetadata, AudioTechnicalMetadata, MediaAssetProperties, VideoScanType, MediaEssence } from "@local/model";
+import { VideoEssence, VideoTechnicalMetadata, AudioTechnicalMetadata, MediaAssetProperties, MediaEssence } from "@local/model";
 import { DataController } from "@local/data";
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
@@ -49,7 +49,7 @@ export async function handler(event: InputEvent, context: Context) {
         const originalEssence = essences.results.find(e => e.tags.includes("Original")) as VideoEssence;
 
         logger.info("Retrieving transcode job results");
-        let job = (await resourceManager.get<Job>(event.data.transcodeJobId)) as JobProperties;
+        let job = await resourceManager.get<Job>(event.data.transcodeJobId);
         logger.info(job);
 
         logger.info("Copying video file to final location");

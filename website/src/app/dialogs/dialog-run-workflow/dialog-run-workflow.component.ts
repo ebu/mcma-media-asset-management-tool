@@ -35,7 +35,7 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
   }
 
   get filteredMediaEssences(): MediaEssence[] {
-    let acceptedFileExtensions: string[] = [];
+    const acceptedFileExtensions: string[] = [];
 
     switch (this.selectedWorkflowType) {
       case MediaWorkflowType.AwsCelebrityRecognition:
@@ -45,6 +45,9 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
         break;
       case MediaWorkflowType.AwsTranscription:
         acceptedFileExtensions.push("mp3", "mp4", "wav", "flac", "ogg", "amr", "webm");
+        break;
+      case MediaWorkflowType.GoogleTranscription:
+        acceptedFileExtensions.push("flac", "mp4");
         break;
     }
 
@@ -92,7 +95,7 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
 
   static createDialog(dialog: MatDialog, mediaAssetGuid: string, mediaAsset: MediaAsset, hasBackdrop: boolean = true): MatDialogRef<DialogRunWorkflowComponent> {
     return dialog.open(DialogRunWorkflowComponent, {
-      width: "500px",
+      width: "800px",
       autoFocus: false,
       restoreFocus: false,
       disableClose: true,

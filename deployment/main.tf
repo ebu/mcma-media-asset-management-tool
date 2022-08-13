@@ -185,7 +185,7 @@ module "aws_ai_service" {
 #########################
 
 module "google_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/google-ai-service/aws/0.0.3/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/google-ai-service/aws/0.0.4/module.zip"
 
   prefix = "${var.global_prefix}-google-ai-service"
 
@@ -233,6 +233,7 @@ module "stepfunctions_workflow_service" {
     module.aws_face_detection.workflow_definition,
     module.aws_label_detection.workflow_definition,
     module.aws_transcription.workflow_definition,
+    module.google_transcription.workflow_definition,
   ]
 }
 
@@ -308,6 +309,23 @@ module "aws_transcription" {
   source = "../workflows/aws-transcription"
 
   prefix = "${var.global_prefix}-wf-aws-transcription"
+
+  aws_account_id = data.aws_caller_identity.current.account_id
+  aws_region     = var.aws_region
+
+  service_registry = module.service_registry
+  job_processor    = module.job_processor
+  mam_service      = module.service
+
+  media_bucket = aws_s3_bucket.media
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
+module "google_transcription" {
+  source = "../workflows/google-transcription"
+
+  prefix = "${var.global_prefix}-wf-google-transcription"
 
   aws_account_id = data.aws_caller_identity.current.account_id
   aws_region     = var.aws_region

@@ -3,5 +3,6 @@ task build {
     dependsOn "aws-face-detection:build"
     dependsOn "aws-label-detection:build"
     dependsOn "aws-transcription:build"
+    dependsOn "google-transcription:build"
     dependsOn "media-ingest:build"
 }

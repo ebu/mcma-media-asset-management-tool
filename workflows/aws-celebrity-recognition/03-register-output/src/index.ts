@@ -2,7 +2,7 @@ import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
 import { default as axios } from "axios";
 
-import { Job, JobProperties, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
+import { Job, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
 import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
 import { buildS3Url, S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
@@ -42,7 +42,7 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(context);
 
         logger.info("Retrieving celebrity recognition job results");
-        let job = (await resourceManager.get<Job>(event.data.aiJobId)) as JobProperties;
+        let job = await resourceManager.get<Job>(event.data.aiJobId);
         logger.info(job);
 
         logger.info("Copying celebrity recognition data file to final location");

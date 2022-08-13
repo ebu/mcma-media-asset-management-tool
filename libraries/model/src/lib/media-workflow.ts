@@ -6,6 +6,7 @@ export enum MediaWorkflowType {
     AwsFaceDetection = "AwsFaceDetection",
     AwsLabelDetection = "AwsLabelDetection",
     AwsTranscription = "AwsTranscription",
+    GoogleTranscription = "GoogleTranscription",
 }
 
 export interface MediaWorkflowProperties extends McmaResourceProperties {

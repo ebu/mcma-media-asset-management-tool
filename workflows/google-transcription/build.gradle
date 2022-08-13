@@ -1,0 +1,6 @@
+task build {
+    dependsOn "01-validate-input:build"
+    dependsOn "02-extract-audio:build"
+    dependsOn "03-transcription:build"
+    dependsOn "04-register-output:build"
+}
