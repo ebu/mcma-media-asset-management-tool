@@ -1,4 +1,4 @@
-import { Locator, LocatorProperties, McmaResource, McmaResourceProperties } from "@mcma/core";
+import { Locator, LocatorProperties, McmaResource, McmaResourceProperties, Utils } from "@mcma/core";
 import { S3Locator, S3LocatorProperties } from "@mcma/aws-s3";
 
 import {
@@ -36,10 +36,10 @@ export class MediaEssence extends McmaResource implements MediaEssenceProperties
         }
         super(<string>typeOrProperties, properties);
 
-        this.checkProperty("filename", "string", false);
-        this.checkProperty("extension", "string", false);
-        this.checkProperty("size", "number", false);
-        this.checkProperty("duration", "number", false);
+        Utils.checkProperty(this, "filename", "string", false);
+        Utils.checkProperty(this, "extension", "string", false);
+        Utils.checkProperty(this, "size", "number", false);
+        Utils.checkProperty(this, "duration", "number", false);
 
         if (this.extension) {
             this.extension = this.extension.toLowerCase();

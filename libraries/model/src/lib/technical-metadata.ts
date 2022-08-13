@@ -1,4 +1,4 @@
-import { McmaObject, McmaObjectProperties } from "@mcma/core";
+import { McmaObject, McmaObjectProperties, Utils } from "@mcma/core";
 
 export interface TechnicalMetadataProperties extends McmaObjectProperties {
     codec?: string;
@@ -10,7 +10,7 @@ export class TechnicalMetadata extends McmaObject implements TechnicalMetadataPr
     constructor(type: string, properties: TechnicalMetadataProperties) {
         super(type, properties);
 
-        this.checkProperty("codec", "string", false);
+        Utils.checkProperty(this, "codec", "string", false);
     }
 }
 
@@ -34,9 +34,9 @@ export class ImageTechnicalMetadata extends TechnicalMetadata implements ImageTe
         }
         super(typeOrProperties as string, properties);
 
-        this.checkProperty("width", "number", false);
-        this.checkProperty("height", "number", false);
-        this.checkProperty("aspectRatio", "string", false);
+        Utils.checkProperty(this, "width", "number", false);
+        Utils.checkProperty(this, "height", "number", false);
+        Utils.checkProperty(this, "aspectRatio", "string", false);
     }
 }
 
@@ -70,8 +70,8 @@ export class VideoTechnicalMetadata extends ImageTechnicalMetadata implements Vi
     constructor(properties: VideoTechnicalMetadataProperties) {
         super("VideoTechnicalMetadata", properties);
 
-        this.checkProperty("frameRate", "number", false);
-        this.checkProperty("bitRate", "number", false);
+        Utils.checkProperty(this, "frameRate", "number", false);
+        Utils.checkProperty(this, "bitRate", "number", false);
 
         this.bitRateMode = this.bitRateMode ?? BitRateMode.Unknown;
         this.scanType = this.scanType ?? VideoScanType.Unknown;
@@ -96,10 +96,10 @@ export class AudioTechnicalMetadata extends TechnicalMetadata implements AudioTe
     constructor(properties: AudioTechnicalMetadataProperties) {
         super("AudioTechnicalMetadata", properties);
 
-        this.checkProperty("channels", "number", false);
-        this.checkProperty("samplingRate", "number", false);
-        this.checkProperty("sampleSize", "number", false);
-        this.checkProperty("bitRate", "number", false);
+        Utils.checkProperty(this, "channels", "number", false);
+        Utils.checkProperty(this, "samplingRate", "number", false);
+        Utils.checkProperty(this, "sampleSize", "number", false);
+        Utils.checkProperty(this, "bitRate", "number", false);
 
         this.bitRateMode = this.bitRateMode ?? BitRateMode.Unknown;
     }

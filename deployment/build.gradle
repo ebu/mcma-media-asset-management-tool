@@ -5,18 +5,25 @@ task generateTerraformTFVars {
     inputs.property("environment_type", environmentType)
     inputs.property("aws_profile", awsProfile)
     inputs.property("aws_region", awsRegion)
+    inputs.property("google_credentials_file", googleCredentialsFile)
+    inputs.property("google_bucket_location", googleBucketLocation)
+    inputs.property("google_bucket_name", googleBucketName)
 
     def propertyFile = file("${projectDir}/terraform.tfvars.json")
     outputs.file(propertyFile)
 
     doLast {
         def data = [
-                environment_name: environmentName,
-                environment_type: environmentType,
-                global_prefix   : "${environmentName}-${environmentType}",
+                environment_name       : environmentName,
+                environment_type       : environmentType,
+                global_prefix          : "${environmentName}-${environmentType}",
 
-                aws_profile     : awsProfile,
-                aws_region      : awsRegion,
+                aws_profile            : awsProfile,
+                aws_region             : awsRegion,
+
+                google_credentials_file: new File(rootDir, googleCredentialsFile).toString(),
+                google_bucket_location : googleBucketLocation,
+                google_bucket_name     : googleBucketName,
         ]
 
         def json = JsonOutput.toJson(data)

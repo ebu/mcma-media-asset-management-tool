@@ -1,4 +1,4 @@
-import { McmaResource, McmaResourceProperties } from "@mcma/core";
+import { McmaResource, McmaResourceProperties, Utils } from "@mcma/core";
 
 export interface MediaAssetProperties extends McmaResourceProperties {
     title: string;
@@ -16,9 +16,9 @@ export class MediaAsset extends McmaResource implements MediaAssetProperties {
     constructor(properties: MediaAssetProperties) {
         super("MediaAsset", properties);
 
-        this.checkProperty("title", "string", true);
-        this.checkProperty("description", "string", true);
-        this.checkProperty("thumbnailUrl", "string", false);
-        this.checkProperty("videoUrl", "string", false);
+        Utils.checkProperty(this, "title", "string", true);
+        Utils.checkProperty(this, "description", "string", true);
+        Utils.checkProperty(this, "thumbnailUrl", "string", false);
+        Utils.checkProperty(this, "videoUrl", "string", false);
     }
 }

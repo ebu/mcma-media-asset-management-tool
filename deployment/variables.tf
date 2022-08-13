@@ -14,3 +14,10 @@ variable "global_prefix" {}
 variable "aws_profile" {}
 variable "aws_region" {}
 
+#########################
+# Google Configuration
+#########################
+
+variable "google_credentials_file" {}
+variable "google_bucket_location" {}
+variable "google_bucket_name" {}

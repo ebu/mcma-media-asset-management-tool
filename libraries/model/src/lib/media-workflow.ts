@@ -1,4 +1,4 @@
-import { JobStatus, McmaResource, McmaResourceProperties, ProblemDetail, ProblemDetailProperties } from "@mcma/core";
+import { JobStatus, McmaResource, McmaResourceProperties, ProblemDetail, ProblemDetailProperties, Utils } from "@mcma/core";
 
 export enum MediaWorkflowType {
     MediaIngest = "MediaIngest",
@@ -34,15 +34,15 @@ export class MediaWorkflow extends McmaResource implements MediaWorkflowProperti
     constructor(properties: MediaWorkflowProperties) {
         super("MediaWorkflow", properties);
 
-        this.checkProperty("type", "string", true);
-        this.checkProperty("input", "object", true);
-        this.checkProperty("status", "string", false);
-        this.checkProperty("error", "object", false);
-        this.checkProperty("mediaAssetId", "url", false);
-        this.checkProperty("mediaAssetTitle", "string", false);
-        this.checkProperty("mediaAssetWorkflowId", "url", false);
-        this.checkProperty("workflowJobId", "url", false);
-        this.checkProperty("detailUrl", "url", false);
+        Utils.checkProperty(this, "type", "string", true);
+        Utils.checkProperty(this, "input", "object", true);
+        Utils.checkProperty(this, "status", "string", false);
+        Utils.checkProperty(this, "error", "object", false);
+        Utils.checkProperty(this, "mediaAssetId", "url", false);
+        Utils.checkProperty(this, "mediaAssetTitle", "string", false);
+        Utils.checkProperty(this, "mediaAssetWorkflowId", "url", false);
+        Utils.checkProperty(this, "workflowJobId", "url", false);
+        Utils.checkProperty(this, "detailUrl", "url", false);
 
         if (!this.status) {
             this.status = JobStatus.New;
@@ -67,9 +67,9 @@ export class MediaAssetWorkflow extends McmaResource implements MediaAssetWorkfl
     constructor(properties: MediaAssetWorkflowProperties) {
         super("MediaAssetWorkflow", properties);
 
-        this.checkProperty("mediaWorkflowType", "string", true);
-        this.checkProperty("mediaWorkflowId", "url", true);
-        this.checkProperty("data", "object", false);
+        Utils.checkProperty(this, "mediaWorkflowType", "string", true);
+        Utils.checkProperty(this, "mediaWorkflowId", "url", true);
+        Utils.checkProperty(this, "data", "object", false);
 
         if (!this.data) {
             this.data = {};
