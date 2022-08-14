@@ -8,7 +8,7 @@ import { buildS3Url, S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
 import { awsV4Auth } from "@mcma/aws-client";
 
-import { MediaAssetWorkflow, MediaEssence } from "@local/model";
+import { AudioEssence, AudioTechnicalMetadata, BitRateMode, MediaAssetWorkflow, MediaEssence, VideoEssence } from "@local/model";
 import { DataController } from "@local/data";
 
 const { MediaBucket, TableName, PublicUrl } = process.env;
@@ -97,13 +97,35 @@ export async function handler(event: InputEvent, context: Context) {
             const locators = [new S3Locator({ url: url })];
             const tags: string[] = ["GoogleTranscription"];
 
-            const essence = await dataController.createMediaEssence(event.input.mediaAssetId, new MediaEssence({
-                filename,
-                extension,
-                size,
-                locators,
-                tags,
-            }));
+            let essence;
+            if (extension === "flac") {
+                const essences = await dataController.query<MediaEssence>(`${event.input.mediaAssetId}/essences`);
+                const originalEssence = essences.results.find(e => e.tags.includes("Original")) as VideoEssence;
+
+                essence = await dataController.createMediaEssence(event.input.mediaAssetId, new AudioEssence({
+                    filename,
+                    extension,
+                    size,
+                    locators,
+                    tags,
+                    duration: originalEssence.duration,
+                    audioTechnicalMetadata: new AudioTechnicalMetadata({
+                        codec: "FLAC",
+                        bitRateMode: BitRateMode.VariableBitRate,
+                        channels: originalEssence.audioTechnicalMetadata.channels,
+                        samplingRate: originalEssence.audioTechnicalMetadata.samplingRate,
+                        sampleSize: originalEssence.audioTechnicalMetadata.sampleSize,
+                    })
+                }))
+            } else {
+                essence = await dataController.createMediaEssence(event.input.mediaAssetId, new MediaEssence({
+                    filename,
+                    extension,
+                    size,
+                    locators,
+                    tags,
+                }));
+            }
             logger.info(essence);
 
             essenceIds.push(essence.id);

@@ -71,15 +71,19 @@
               <td>Codec:</td>
               <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.codec}}</td>
             </tr>
-            <tr>
+            <tr *ngIf="(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.channels">
               <td>Channels:</td>
               <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.channels}}</td>
             </tr>
-            <tr>
+            <tr *ngIf="(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.samplingRate">
               <td>Sampling Rate:</td>
               <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.samplingRate}} Hz</td>
             </tr>
-            <tr>
+            <tr *ngIf="(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.sampleSize">
+              <td>Bit depth:</td>
+              <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.sampleSize}} bits</td>
+            </tr>
+            <tr *ngIf="(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.bitRate">
               <td>Bit Rate:</td>
               <td>{{(selectedMediaEssence | as : AudioEssence)?.audioTechnicalMetadata?.bitRate}} kbit/s</td>
             </tr>
