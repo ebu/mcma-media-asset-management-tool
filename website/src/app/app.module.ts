@@ -23,6 +23,7 @@ import { AwsCelebrityRecognitionComponent } from "./components/aws-celebrity-rec
 import { AwsTranscriptionComponent } from './components/aws-transcription/aws-transcription.component';
 import { AwsLabelDetectionComponent } from './components/aws-label-detection/aws-label-detection.component';
 import { AwsFaceDetectionComponent } from './components/aws-face-detection/aws-face-detection.component';
+import { GoogleTranscriptionComponent } from './components/google-transcription/google-transcription.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { AwsFaceDetectionComponent } from './components/aws-face-detection/aws-f
     AwsTranscriptionComponent,
     AwsLabelDetectionComponent,
     AwsFaceDetectionComponent,
+    GoogleTranscriptionComponent,
   ],
   imports: [
     AppRoutingModule,

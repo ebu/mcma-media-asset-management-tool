@@ -33,6 +33,9 @@
         <app-aws-transcription *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'AwsTranscription'"
                                [assetWorkflow]="selectedMediaAssetWorkflow"
                                (isLoadingEvent)="setChildLoading($event)"></app-aws-transcription>
+        <app-google-transcription *ngIf="selectedMediaAssetWorkflow?.mediaWorkflowType === 'GoogleTranscription'"
+                               [assetWorkflow]="selectedMediaAssetWorkflow"
+                               (isLoadingEvent)="setChildLoading($event)"></app-google-transcription>
       </div>
     </div>
   </div>
