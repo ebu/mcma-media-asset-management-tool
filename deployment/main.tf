@@ -80,6 +80,7 @@ module "service_registry" {
     module.ffmpeg_service.service_definition,
     module.aws_ai_service.service_definition,
     module.google_ai_service.service_definition,
+    module.azure_ai_service.service_definition,
     module.stepfunctions_workflow_service.service_definition,
   ]
 }
@@ -110,6 +111,7 @@ module "job_processor" {
     "${module.stepfunctions_workflow_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.aws_ai_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.google_ai_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.azure_ai_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.service.aws_apigatewayv2_api.rest_api.execution_arn}/${var.environment_type}/*/*",
   ]
 }
@@ -200,8 +202,32 @@ module "google_ai_service" {
   ]
 
   google_credentials_file = var.google_credentials_file
-  google_bucket_location = var.google_bucket_location
-  google_bucket_name = var.google_bucket_name
+  google_bucket_location  = var.google_bucket_location
+  google_bucket_name      = var.google_bucket_name
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
+#########################
+# Azure AI service
+#########################
+
+module "azure_ai_service" {
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/0.0.1/module.zip"
+
+  prefix = "${var.global_prefix}-azure-ai-service"
+
+  stage_name = var.environment_type
+  aws_region = var.aws_region
+
+  service_registry = module.service_registry
+
+  execute_api_arns = [
+    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+  ]
+
+  azure_config_file = var.azure_config_file
 
   log_group = aws_cloudwatch_log_group.main
 }

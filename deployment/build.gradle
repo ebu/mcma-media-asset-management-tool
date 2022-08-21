@@ -8,6 +8,7 @@ task generateTerraformTFVars {
     inputs.property("google_credentials_file", googleCredentialsFile)
     inputs.property("google_bucket_location", googleBucketLocation)
     inputs.property("google_bucket_name", googleBucketName)
+    inputs.property("azure_config_file", azureConfigFile)
 
     def propertyFile = file("${projectDir}/terraform.tfvars.json")
     outputs.file(propertyFile)
@@ -24,6 +25,8 @@ task generateTerraformTFVars {
                 google_credentials_file: new File(rootDir, googleCredentialsFile).toString(),
                 google_bucket_location : googleBucketLocation,
                 google_bucket_name     : googleBucketName,
+
+                azure_config_file      : new File(rootDir, azureConfigFile).toString(),
         ]
 
         def json = JsonOutput.toJson(data)

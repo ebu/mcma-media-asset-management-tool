@@ -21,3 +21,9 @@ variable "aws_region" {}
 variable "google_credentials_file" {}
 variable "google_bucket_location" {}
 variable "google_bucket_name" {}
+
+#########################
+# Azure Configuration
+#########################
+
+variable "azure_config_file" {}
