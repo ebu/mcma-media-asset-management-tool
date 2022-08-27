@@ -143,7 +143,7 @@ module "mediainfo_ame_service" {
 #########################
 
 module "ffmpeg_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.8/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.9/module.zip"
 
   prefix = "${var.global_prefix}-ffmpeg-service"
 
@@ -213,7 +213,7 @@ module "google_ai_service" {
 #########################
 
 module "azure_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/0.0.1/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/0.0.2/module.zip"
 
   prefix = "${var.global_prefix}-azure-ai-service"
 
@@ -259,6 +259,7 @@ module "stepfunctions_workflow_service" {
     module.aws_face_detection.workflow_definition,
     module.aws_label_detection.workflow_definition,
     module.aws_transcription.workflow_definition,
+    module.azure_transcription.workflow_definition,
     module.google_transcription.workflow_definition,
   ]
 }
@@ -335,6 +336,23 @@ module "aws_transcription" {
   source = "../workflows/aws-transcription"
 
   prefix = "${var.global_prefix}-wf-aws-transcription"
+
+  aws_account_id = data.aws_caller_identity.current.account_id
+  aws_region     = var.aws_region
+
+  service_registry = module.service_registry
+  job_processor    = module.job_processor
+  mam_service      = module.service
+
+  media_bucket = aws_s3_bucket.media
+
+  log_group = aws_cloudwatch_log_group.main
+}
+
+module "azure_transcription" {
+  source = "../workflows/azure-transcription"
+
+  prefix = "${var.global_prefix}-wf-azure-transcription"
 
   aws_account_id = data.aws_caller_identity.current.account_id
   aws_region     = var.aws_region

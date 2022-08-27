@@ -46,6 +46,9 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
       case MediaWorkflowType.AwsTranscription:
         acceptedFileExtensions.push("mp3", "mp4", "wav", "flac", "ogg", "amr", "webm");
         break;
+      case MediaWorkflowType.AzureTranscription:
+        acceptedFileExtensions.push("mp4", "wav");
+        break;
       case MediaWorkflowType.GoogleTranscription:
         acceptedFileExtensions.push("flac", "mp4");
         break;
@@ -71,13 +74,13 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
     this.mediaEssencesSubscription?.unsubscribe();
   }
 
-  canStartWorkflow() {
+  canStartWorkflow(): boolean {
     return !!this.data.mediaAsset?.id &&
            !!this.selectedWorkflowType &&
            !!this.selectedEssence;
   }
 
-  startWorkflow() {
+  startWorkflow(): void {
     if (this.canStartWorkflow()) {
       this.dataService.createWorkflow(new MediaWorkflow({
         type: this.selectedWorkflowType!,
@@ -99,7 +102,7 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
       autoFocus: false,
       restoreFocus: false,
       disableClose: true,
-      hasBackdrop: hasBackdrop,
+      hasBackdrop,
       data: {
         mediaAssetGuid,
         mediaAsset,
@@ -107,7 +110,7 @@ export class DialogRunWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  static closeDialog(uploadDialogRef: MatDialogRef<DialogRunWorkflowComponent>) {
+  static closeDialog(uploadDialogRef: MatDialogRef<DialogRunWorkflowComponent>): void {
     uploadDialogRef.close();
   }
 }

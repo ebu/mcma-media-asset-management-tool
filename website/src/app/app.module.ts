@@ -24,6 +24,7 @@ import { AwsTranscriptionComponent } from './components/aws-transcription/aws-tr
 import { AwsLabelDetectionComponent } from './components/aws-label-detection/aws-label-detection.component';
 import { AwsFaceDetectionComponent } from './components/aws-face-detection/aws-face-detection.component';
 import { GoogleTranscriptionComponent } from './components/google-transcription/google-transcription.component';
+import { AzureTranscriptionComponent } from './components/azure-transcription/azure-transcription.component';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { GoogleTranscriptionComponent } from './components/google-transcription/
     AwsLabelDetectionComponent,
     AwsFaceDetectionComponent,
     GoogleTranscriptionComponent,
+    AzureTranscriptionComponent,
   ],
   imports: [
     AppRoutingModule,

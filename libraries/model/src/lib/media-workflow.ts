@@ -6,6 +6,7 @@ export enum MediaWorkflowType {
     AwsFaceDetection = "AwsFaceDetection",
     AwsLabelDetection = "AwsLabelDetection",
     AwsTranscription = "AwsTranscription",
+    AzureTranscription = "AzureTranscription",
     GoogleTranscription = "GoogleTranscription",
 }
 
