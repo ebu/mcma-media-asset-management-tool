@@ -3,21 +3,23 @@ import * as AWSXRay from "aws-xray-sdk-core";
 import { default as axios } from "axios";
 
 import { Job, McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { buildS3Url, S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
 import { awsV4Auth } from "@mcma/aws-client";
 
-const { MediaBucket, TableName, PublicUrl } = process.env;
+const { MEDIA_BUCKET } = process.env;
 import { VideoEssence, VideoTechnicalMetadata, AudioTechnicalMetadata, MediaAssetProperties, MediaEssence } from "@local/model";
 import { DataController } from "@local/data";
+import { getTableName } from "@mcma/data";
+import { getPublicUrl } from "@mcma/api";
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const s3 = new AWS.S3();
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-08-register-web-version", process.env.LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-08-register-web-version", getLogGroupName());
 const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
-const dataController = new DataController(TableName, PublicUrl, true, new AWS.DynamoDB());
+const dataController = new DataController(getTableName(), getPublicUrl(), true, new AWS.DynamoDB());
 
 type InputEvent = {
     input: {
@@ -57,7 +59,7 @@ export async function handler(event: InputEvent, context: Context) {
 
         const filename = outputFile.key.substring(outputFile.key.lastIndexOf("/") + 1);
         const extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
-        const thumbnailKey = `${event.data.mediaAssetId.substring(PublicUrl.length + 1)}/${filename}`;
+        const thumbnailKey = `${event.data.mediaAssetId.substring(getPublicUrl().length + 1)}/${filename}`;
 
         const response = await axios.get(outputFile.url, { responseType: "stream" });
         logger.info(response.headers);
@@ -68,7 +70,7 @@ export async function handler(event: InputEvent, context: Context) {
         const contentType = response.headers["content-type"];
 
         const uploadParams: AWS.S3.Types.PutObjectRequest = {
-            Bucket: MediaBucket,
+            Bucket: MEDIA_BUCKET,
             Key: thumbnailKey,
             Body: response.data,
             ContentType: contentType,

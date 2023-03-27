@@ -7,10 +7,14 @@ provider "aws" {
   region  = var.aws_region
 }
 
-#################################
-# Retrieving AWS account details
-#################################
-data "aws_caller_identity" "current" {}
+provider "mcma" {
+  service_registry_url = module.service_registry.service_url
+
+  aws4_auth {
+    profile = var.aws_profile
+    region  = var.aws_region
+  }
+}
 
 ############################################
 # Cloud watch log group for central logging
@@ -30,8 +34,7 @@ module "service" {
 
   stage_name = var.environment_type
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   media_bucket     = aws_s3_bucket.media
   service_registry = module.service_registry
@@ -50,8 +53,7 @@ module "website" {
 
   environment_type = var.environment_type
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   media_bucket = aws_s3_bucket.media
   mam_service  = module.service
@@ -62,27 +64,19 @@ module "website" {
 #########################
 
 module "service_registry" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/service-registry/aws/0.13.28/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/service-registry/aws/0.15.0/module.zip"
 
   prefix = "${var.global_prefix}-service-registry"
 
   stage_name = var.environment_type
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region  = var.aws_region
+  aws_profile = var.aws_profile
 
-  log_group = aws_cloudwatch_log_group.main
-
-  services = [
-    module.service.service_definition,
-    module.job_processor.service_definition,
-    module.mediainfo_ame_service.service_definition,
-    module.ffmpeg_service.service_definition,
-    module.aws_ai_service.service_definition,
-    module.google_ai_service.service_definition,
-    module.azure_ai_service.service_definition,
-    module.stepfunctions_workflow_service.service_definition,
-  ]
+  log_group                   = aws_cloudwatch_log_group.main
+  api_gateway_metrics_enabled = true
+  xray_tracing_enabled        = true
+  enhanced_monitoring_enabled = true
 }
 
 #########################
@@ -90,20 +84,16 @@ module "service_registry" {
 #########################
 
 module "job_processor" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/job-processor/aws/0.13.28/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/job-processor/aws/0.15.0/module.zip"
 
   prefix = "${var.global_prefix}-job-processor"
 
   stage_name     = var.environment_type
   dashboard_name = var.global_prefix
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
-
-  log_group = aws_cloudwatch_log_group.main
-
   execute_api_arns = [
     "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/GET/*",
     "${module.ffmpeg_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
@@ -114,6 +104,11 @@ module "job_processor" {
     "${module.azure_ai_service.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
     "${module.service.aws_apigatewayv2_api.rest_api.execution_arn}/${var.environment_type}/*/*",
   ]
+
+  log_group                   = aws_cloudwatch_log_group.main
+  api_gateway_metrics_enabled = true
+  xray_tracing_enabled        = true
+  enhanced_monitoring_enabled = true
 }
 
 #########################
@@ -121,7 +116,7 @@ module "job_processor" {
 #########################
 
 module "mediainfo_ame_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.0.4/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.1.0/module.zip"
 
   prefix = "${var.global_prefix}-mediainfo-ame-service"
 
@@ -131,11 +126,14 @@ module "mediainfo_ame_service" {
   service_registry = module.service_registry
 
   execute_api_arns = [
-    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.job_processor.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
   ]
 
-  log_group = aws_cloudwatch_log_group.main
+  log_group                   = aws_cloudwatch_log_group.main
+  api_gateway_metrics_enabled = true
+  xray_tracing_enabled        = true
+  enhanced_monitoring_enabled = true
 }
 
 #########################
@@ -143,7 +141,7 @@ module "mediainfo_ame_service" {
 #########################
 
 module "ffmpeg_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.0.9/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.1.0/module.zip"
 
   prefix = "${var.global_prefix}-ffmpeg-service"
 
@@ -153,11 +151,14 @@ module "ffmpeg_service" {
   service_registry = module.service_registry
 
   execute_api_arns = [
-    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.job_processor.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
   ]
 
-  log_group = aws_cloudwatch_log_group.main
+  log_group                   = aws_cloudwatch_log_group.main
+  api_gateway_metrics_enabled = true
+  xray_tracing_enabled        = true
+  enhanced_monitoring_enabled = true
 }
 
 #########################
@@ -165,7 +166,7 @@ module "ffmpeg_service" {
 #########################
 
 module "aws_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.1.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.1.1/module.zip"
 
   prefix = "${var.global_prefix}-aws-ai-service"
 
@@ -175,8 +176,8 @@ module "aws_ai_service" {
   service_registry = module.service_registry
 
   execute_api_arns = [
-    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.job_processor.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
   ]
 
   log_group = aws_cloudwatch_log_group.main
@@ -187,7 +188,7 @@ module "aws_ai_service" {
 #########################
 
 module "google_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/google-ai-service/aws/0.0.5/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/google-ai-service/aws/0.1.0/module.zip"
 
   prefix = "${var.global_prefix}-google-ai-service"
 
@@ -197,15 +198,18 @@ module "google_ai_service" {
   service_registry = module.service_registry
 
   execute_api_arns = [
-    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.job_processor.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
   ]
 
   google_credentials_file = var.google_credentials_file
   google_bucket_location  = var.google_bucket_location
   google_bucket_name      = var.google_bucket_name
 
-  log_group = aws_cloudwatch_log_group.main
+  log_group                   = aws_cloudwatch_log_group.main
+  api_gateway_metrics_enabled = true
+  xray_tracing_enabled        = true
+  enhanced_monitoring_enabled = true
 }
 
 #########################
@@ -213,7 +217,7 @@ module "google_ai_service" {
 #########################
 
 module "azure_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/0.0.2/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/0.1.0/module.zip"
 
   prefix = "${var.global_prefix}-azure-ai-service"
 
@@ -223,8 +227,8 @@ module "azure_ai_service" {
   service_registry = module.service_registry
 
   execute_api_arns = [
-    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.job_processor.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
   ]
 
   azure_config_file = var.azure_config_file
@@ -237,9 +241,9 @@ module "azure_ai_service" {
 ########################################
 
 module "stepfunctions_workflow_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.0.6/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.1.0/module.zip"
 
-  prefix = "${var.global_prefix}-stepfunctions-workflow-service"
+  prefix = "${var.global_prefix}-sf-workflow-service"
 
   stage_name = var.environment_type
   aws_region = var.aws_region
@@ -247,8 +251,8 @@ module "stepfunctions_workflow_service" {
   service_registry = module.service_registry
 
   execute_api_arns = [
-    "${module.service_registry.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
-    "${module.job_processor.aws_apigatewayv2_stage.service_api.execution_arn}/*/*",
+    "${module.service_registry.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
+    "${module.job_processor.aws_apigatewayv2_api.service_api.execution_arn}/${var.environment_type}/*/*",
   ]
 
   log_group = aws_cloudwatch_log_group.main
@@ -269,8 +273,7 @@ module "media_ingest_workflow" {
 
   prefix = "${var.global_prefix}-wf-media-ingest"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor
@@ -286,8 +289,7 @@ module "aws_celebrity_recognition" {
 
   prefix = "${var.global_prefix}-wf-aws-celebrity-recognition"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor
@@ -303,8 +305,7 @@ module "aws_face_detection" {
 
   prefix = "${var.global_prefix}-wf-aws-face-detection"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor
@@ -320,8 +321,7 @@ module "aws_label_detection" {
 
   prefix = "${var.global_prefix}-wf-aws-label-detection"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor
@@ -337,8 +337,7 @@ module "aws_transcription" {
 
   prefix = "${var.global_prefix}-wf-aws-transcription"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor
@@ -354,8 +353,7 @@ module "azure_transcription" {
 
   prefix = "${var.global_prefix}-wf-azure-transcription"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor
@@ -371,8 +369,7 @@ module "google_transcription" {
 
   prefix = "${var.global_prefix}-wf-google-transcription"
 
-  aws_account_id = data.aws_caller_identity.current.account_id
-  aws_region     = var.aws_region
+  aws_region = var.aws_region
 
   service_registry = module.service_registry
   job_processor    = module.job_processor

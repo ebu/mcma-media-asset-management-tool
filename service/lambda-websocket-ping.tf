@@ -17,7 +17,7 @@ resource "aws_iam_role" "websocket_ping" {
         Effect    = "Allow"
         Action    = "sts:AssumeRole"
         Principal = {
-          "Service" = "lambda.amazonaws.com"
+          Service = "lambda.amazonaws.com"
         }
       }
     ]
@@ -38,24 +38,24 @@ resource "aws_iam_role_policy" "websocket_ping" {
         Resource = "*"
       },
       {
-        Sid      = "WriteToCloudWatchLogs"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "WriteToCloudWatchLogs"
+        Effect = "Allow"
+        Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
         ],
         Resource = concat([
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${local.lambda_name_websocket_ping}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group.name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${local.lambda_name_websocket_ping}:*",
         ], var.enhanced_monitoring_enabled ? [
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*"
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda-insights:*"
         ] : [])
       },
       {
-        Sid      = "ListAndDescribeDynamoDBTables"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "ListAndDescribeDynamoDBTables"
+        Effect = "Allow"
+        Action = [
           "dynamodb:List*",
           "dynamodb:DescribeReservedCapacity*",
           "dynamodb:DescribeLimits",
@@ -64,9 +64,9 @@ resource "aws_iam_role_policy" "websocket_ping" {
         Resource = "*"
       },
       {
-        Sid      = "AllowTableOperations"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "AllowTableOperations"
+        Effect = "Allow"
+        Action = [
           "dynamodb:BatchGetItem",
           "dynamodb:BatchWriteItem",
           "dynamodb:DeleteItem",
@@ -89,30 +89,30 @@ resource "aws_iam_role_policy" "websocket_ping" {
         Resource = "${aws_apigatewayv2_api.websocket.execution_arn}/${var.stage_name}/*/*"
       },
       {
-        Sid      = "AllowEnablingDisablingEventRule"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "AllowEnablingDisablingEventRule"
+        Effect = "Allow"
+        Action = [
           "events:EnableRule",
           "events:DisableRule",
         ]
         Resource = aws_cloudwatch_event_rule.websocket_ping.arn
       }
     ],
-    var.xray_tracing_enabled ?
-    [
-      {
-        Sid      = "AllowLambdaWritingToXRay"
-        Effect   = "Allow"
-        Action   = [
-          "xray:PutTraceSegments",
-          "xray:PutTelemetryRecords",
-          "xray:GetSamplingRules",
-          "xray:GetSamplingTargets",
-          "xray:GetSamplingStatisticSummaries",
-        ]
-        Resource = "*"
-      }
-    ] : [])
+      var.xray_tracing_enabled ?
+      [
+        {
+          Sid    = "AllowLambdaWritingToXRay"
+          Effect = "Allow"
+          Action = [
+            "xray:PutTraceSegments",
+            "xray:PutTelemetryRecords",
+            "xray:GetSamplingRules",
+            "xray:GetSamplingTargets",
+            "xray:GetSamplingStatisticSummaries",
+          ]
+          Resource = "*"
+        }
+      ] : [])
   })
 }
 
@@ -126,17 +126,19 @@ resource "aws_lambda_function" "websocket_ping" {
   role             = aws_iam_role.websocket_ping.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/websocket-ping/build/dist/lambda.zip")
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   timeout          = "30"
   memory_size      = "2048"
 
-  layers = var.enhanced_monitoring_enabled ? ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"] : []
+  layers = var.enhanced_monitoring_enabled && contains(keys(local.lambda_insights_extensions), var.aws_region) ? [
+    local.lambda_insights_extensions[var.aws_region]
+  ] : []
 
   environment {
     variables = {
-      LogGroupName        = var.log_group.name
-      TableName           = aws_dynamodb_table.service_table.name
-      CloudWatchEventRule = aws_cloudwatch_event_rule.websocket_ping.name
+      MCMA_LOG_GROUP_NAME    = var.log_group.name
+      MCMA_TABLE_NAME        = aws_dynamodb_table.service_table.name
+      CLOUD_WATCH_EVENT_RULE = aws_cloudwatch_event_rule.websocket_ping.name
     }
   }
 

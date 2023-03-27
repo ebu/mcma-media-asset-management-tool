@@ -43,9 +43,9 @@ resource "aws_iam_role_policy" "step_03_extract_technical_metadata" {
           "logs:PutLogEvents",
         ]
         Resource = [
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_03_extract_technical_metadata.function_name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group.name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.step_03_extract_technical_metadata.function_name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda-insights:*",
         ]
       },
       {
@@ -91,7 +91,7 @@ resource "aws_lambda_function" "step_03_extract_technical_metadata" {
   role             = aws_iam_role.step_03_extract_technical_metadata.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/03-extract-technical-metadata/build/dist/lambda.zip")
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   timeout          = "900"
   memory_size      = "2048"
 
@@ -99,10 +99,10 @@ resource "aws_lambda_function" "step_03_extract_technical_metadata" {
 
   environment {
     variables = {
-      LogGroupName     = var.log_group.name
-      ServicesUrl      = var.service_registry.services_url
-      ServicesAuthType = var.service_registry.auth_type
-      ActivityArn      = aws_sfn_activity.step_03_extract_technical_metadata.id
+      MCMA_LOG_GROUP_NAME             = var.log_group.name
+      MCMA_SERVICE_REGISTRY_URL       = var.service_registry.service_url
+      MCMA_SERVICE_REGISTRY_AUTH_TYPE = var.service_registry.auth_type
+      ACTIVITY_ARN                    = aws_sfn_activity.step_03_extract_technical_metadata.id
     }
   }
 

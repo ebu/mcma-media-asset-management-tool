@@ -1,14 +1,14 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
 
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 
-const { CloudWatchEventRule, LogGroupName, TableName } = process.env;
+const { CLOUD_WATCH_EVENT_RULE, MCMA_TABLE_NAME } = process.env;
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-handler", LogGroupName, new AWS.CloudWatchLogs());
+const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-handler", getLogGroupName(), new AWS.CloudWatchLogs());
 const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
 
 export async function handler(event: APIGatewayProxyEvent, context: Context) {
@@ -21,14 +21,14 @@ export async function handler(event: APIGatewayProxyEvent, context: Context) {
         logger.debug(event);
         logger.debug(context);
 
-        const table = await dbTableProvider.get(TableName);
+        const table = await dbTableProvider.get(MCMA_TABLE_NAME);
 
         switch (event.requestContext.routeKey) {
             case "$connect":
                 await table.put("/connections/" + event.requestContext.connectionId, event.requestContext);
 
                 const cloudWatchEvents = new AWS.CloudWatchEvents();
-                await cloudWatchEvents.enableRule({ Name: CloudWatchEventRule }).promise();
+                await cloudWatchEvents.enableRule({ Name: CLOUD_WATCH_EVENT_RULE }).promise();
                 break;
             case "$disconnect":
                 await table.delete("/connections/" + event.requestContext.connectionId);

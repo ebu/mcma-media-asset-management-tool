@@ -1,7 +1,7 @@
 output "workflow_definition" {
   value = {
-    name                      = var.name
-    input_parameters          = [
+    name             = var.name
+    input_parameters = [
       {
         parameter_name : "mediaWorkflowId"
         parameter_type : "url"

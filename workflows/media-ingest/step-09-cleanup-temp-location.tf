@@ -35,23 +35,23 @@ resource "aws_iam_role_policy" "step_09_cleanup_temp_location" {
         Resource = "*"
       },
       {
-        Sid      = "WriteToCloudWatchLogs"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "WriteToCloudWatchLogs"
+        Effect = "Allow"
+        Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
         ]
         Resource = [
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_09_cleanup_temp_location.function_name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group.name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.step_09_cleanup_temp_location.function_name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda-insights:*",
         ]
       },
       {
-        Sid      = "XRay"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "XRay"
+        Effect = "Allow"
+        Action = [
           "xray:PutTraceSegments",
           "xray:PutTelemetryRecords",
           "xray:GetSamplingRules",
@@ -76,7 +76,7 @@ resource "aws_lambda_function" "step_09_cleanup_temp_location" {
   role             = aws_iam_role.step_09_cleanup_temp_location.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/09-cleanup-temp-location/build/dist/lambda.zip")
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   timeout          = "900"
   memory_size      = "2048"
 
@@ -84,7 +84,7 @@ resource "aws_lambda_function" "step_09_cleanup_temp_location" {
 
   environment {
     variables = {
-      LogGroupName = var.log_group.name
+      MCMA_LOG_GROUP_NAME = var.log_group.name
     }
   }
 

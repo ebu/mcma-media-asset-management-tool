@@ -24,7 +24,7 @@ export class S3Service {
     return zip(
       this.auth.getCredentials(),
       this.config.get<string>("AwsRegion"),
-      this.config.get<string>("MediaBucket")
+      this.config.get<string>("MEDIA_BUCKET")
     ).pipe(
       map(([credentials, region, bucket]) => {
           return {

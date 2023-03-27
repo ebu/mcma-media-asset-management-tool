@@ -9,10 +9,10 @@
     "main": "build/staging/index.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@mcma/core": "0.14.7",
+        "@mcma/core": "0.15.0",
         "aws-sdk": "^2.1000.0"
     },
     "devDependencies": {
-        "@types/node": "^14.17.34"
+        "@types/node": "^16.11.60"
     }
 }

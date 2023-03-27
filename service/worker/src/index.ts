@@ -4,24 +4,24 @@ import * as AWSXRay from "aws-xray-sdk-core";
 import { AuthProvider, ResourceManagerProvider } from "@mcma/client";
 import { ProviderCollection, Worker, WorkerRequest, WorkerRequestProperties } from "@mcma/worker";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { awsV4Auth } from "@mcma/aws-client";
 
 import { DataController } from "@local/data";
 
 import { deleteAsset, processNotification, startWorkflow } from "./operations";
 import { S3 } from "aws-sdk";
-
-const { LogGroupName, PublicUrl, TableName } = process.env;
+import { getTableName } from "@mcma/data";
+import { getPublicUrl } from "@mcma/api";
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 
 const authProvider = new AuthProvider().add(awsV4Auth(AWS));
 const dbTableProvider = new DynamoDbTableProvider();
-const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-worker", LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-worker", getLogGroupName());
 const resourceManagerProvider = new ResourceManagerProvider(authProvider);
 
-const dataController = new DataController(TableName, PublicUrl, false, new AWS.DynamoDB());
+const dataController = new DataController(getTableName(), getPublicUrl(), false, new AWS.DynamoDB());
 
 const providerCollection = new ProviderCollection({
     authProvider,

@@ -23,11 +23,6 @@ variable "tags" {
 # AWS Variables
 #########################
 
-variable "aws_account_id" {
-  type        = string
-  description = "Account ID to which this module is deployed"
-}
-
 variable "aws_region" {
   type        = string
   description = "AWS Region to which this module is deployed"
@@ -71,7 +66,7 @@ variable "enhanced_monitoring_enabled" {
 variable "service_registry" {
   type = object({
     auth_type              = string,
-    services_url           = string,
+    service_url            = string,
     aws_apigatewayv2_stage = object({
       service_api = object({
         execution_arn = string

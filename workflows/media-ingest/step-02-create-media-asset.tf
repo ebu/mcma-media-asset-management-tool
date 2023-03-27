@@ -43,9 +43,9 @@ resource "aws_iam_role_policy" "step_02_create_media_asset" {
           "logs:PutLogEvents",
         ]
         Resource = [
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_02_create_media_asset.function_name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group.name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.step_02_create_media_asset.function_name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda-insights:*",
         ]
       },
       {
@@ -61,9 +61,9 @@ resource "aws_iam_role_policy" "step_02_create_media_asset" {
         Resource = "*"
       },
       {
-        Sid      = "ListAndDescribeDynamoDBTables"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "ListAndDescribeDynamoDBTables"
+        Effect = "Allow"
+        Action = [
           "dynamodb:List*",
           "dynamodb:DescribeReservedCapacity*",
           "dynamodb:DescribeLimits",
@@ -72,9 +72,9 @@ resource "aws_iam_role_policy" "step_02_create_media_asset" {
         Resource = "*"
       },
       {
-        Sid      = "AllowTableOperations"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "AllowTableOperations"
+        Effect = "Allow"
+        Action = [
           "dynamodb:BatchGetItem",
           "dynamodb:BatchWriteItem",
           "dynamodb:DeleteItem",
@@ -100,7 +100,7 @@ resource "aws_lambda_function" "step_02_create_media_asset" {
   role             = aws_iam_role.step_02_create_media_asset.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/02-create-media-asset/build/dist/lambda.zip")
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   timeout          = "900"
   memory_size      = "2048"
 
@@ -108,9 +108,9 @@ resource "aws_lambda_function" "step_02_create_media_asset" {
 
   environment {
     variables = {
-      LogGroupName = var.log_group.name
-      TableName    = var.mam_service.aws_dynamodb_table.service_table.id
-      PublicUrl    = var.mam_service.rest_api_url
+      MCMA_LOG_GROUP_NAME = var.log_group.name
+      MCMA_TABLE_NAME     = var.mam_service.aws_dynamodb_table.service_table.id
+      MCMA_PUBLIC_URL     = var.mam_service.rest_api_url
     }
   }
 

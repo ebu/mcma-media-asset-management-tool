@@ -1,7 +1,6 @@
 def requiredVersionTerraform = "^1.1.4"
-def requiredVersionNodeJS = "^14.17.4"
+def requiredVersionNodeJS = "^16.0.0"
 def requiredVersionTsc = "^4.3.5"
-def requiredVersionAngularCLI = "^13.0.3"
 
 buildscript {
     dependencies {
@@ -13,14 +12,13 @@ allprojects {
     ext {
         if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
             nodeExecutable = ["node"]
-            ngExecutable = ["cmd", "/c", "ng"]
+            ngExecutable = ["cmd", "/c", "npm", "run", "ng", "--"]
             npmExecutable = ["cmd", "/c", "npm"]
             terraformExecutable = ["cmd", "/c", "terraform"]
             tscExecutable = ["cmd", "/c", "tsc"]
-            ngExecutable = ["cmd", "/c", "ng"]
         } else {
             nodeExecutable = ["node"]
-            ngExecutable = ["ng"]
+            ngExecutable = ["npm", "run", "ng"]
             npmExecutable = ["npm"]
             terraformExecutable = ["terraform"]
             tscExecutable = ["ng"]
@@ -114,25 +112,6 @@ def getVersionTsc() {
     return stdout.toString().trim().replace("Version ", "")
 }
 
-def getVersionAngularCLI() {
-    def stdout = new ByteArrayOutputStream()
-    def stderr = new ByteArrayOutputStream()
-    try {
-        exec {
-            commandLine npmExecutable
-            args "list", "-g", "@angular/cli"
-            standardOutput stdout
-            errorOutput stderr
-        }
-    } catch (Exception ignored) {
-    }
-    def outputParts = stdout.toString().trim().split("@")
-    if (outputParts.length == 3) {
-        return outputParts[2]
-    }
-    return ""
-}
-
 task verifyNodeJS {
     def actualVersion = getVersionNodeJS()
 
@@ -165,18 +144,6 @@ task verifyTsc {
     doLast {
         if (!isSemVerMatching(actualVersion, requiredVersionTsc)) {
             throw new Exception("Required tsc version " + requiredVersionTsc + " not found. Detected version " + actualVersion)
-        }
-    }
-}
-
-task verifyAngularCLI {
-    def actualVersion = getVersionAngularCLI()
-
-    inputs.property("VERSION_ANGULAR_CLI", requiredVersionAngularCLI)
-    outputs.upToDateWhen { isSemVerMatching(actualVersion, requiredVersionAngularCLI) }
-    doLast {
-        if (!isSemVerMatching(actualVersion, requiredVersionAngularCLI)) {
-            throw new Exception("Required tsc version " + requiredVersionAngularCLI + " not found. Detected version " + actualVersion)
         }
     }
 }

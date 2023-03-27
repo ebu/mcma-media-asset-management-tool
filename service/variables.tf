@@ -28,11 +28,6 @@ variable "dead_letter_config_target" {
 # AWS Variables
 #########################
 
-variable "aws_account_id" {
-  type        = string
-  description = "Account ID to which this module is deployed"
-}
-
 variable "aws_region" {
   type        = string
   description = "AWS Region to which this module is deployed"
@@ -42,7 +37,7 @@ variable "aws_region" {
 # Dependencies
 #########################
 variable "media_bucket" {
-  type        = object({
+  type = object({
     arn = string
   })
   description = "Media bucket for Upload and Storage"
@@ -51,7 +46,7 @@ variable "media_bucket" {
 variable "service_registry" {
   type = object({
     auth_type              = string,
-    services_url           = string,
+    service_url            = string,
     aws_apigatewayv2_stage = object({
       service_api = object({
         execution_arn = string
@@ -75,7 +70,7 @@ variable "job_processor" {
 #########################
 
 variable "log_group" {
-  type        = object({
+  type = object({
     id   = string
     arn  = string
     name = string

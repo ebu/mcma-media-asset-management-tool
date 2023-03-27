@@ -9,7 +9,7 @@ npmInstall {
 }
 
 task buildWebsite(type: Exec) {
-  dependsOn npmInstall, ":verifyAngularCLI"
+  dependsOn npmInstall, ":verifyNodeJS"
   inputs.dir "node_modules"
   inputs.dir "src"
   outputs.dir "dist/website"

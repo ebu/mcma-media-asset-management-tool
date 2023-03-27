@@ -1,18 +1,16 @@
 import { APIGatewayEventDefaultAuthorizerContext, APIGatewayEventRequestContextWithAuthorizer, Context, DynamoDBStreamEvent } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
-import { Query } from "@mcma/data";
+import { getTableName, Query } from "@mcma/data";
 import { McmaResource } from "@mcma/core";
 import { S3Locator } from "@mcma/aws-s3";
 import { MediaAsset } from "@local/model";
 
-const { LogGroupName, TableName } = process.env;
-
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const s3 = new AWS.S3({ signatureVersion: "v4" });
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-db-trigger", LogGroupName, new AWS.CloudWatchLogs());
+const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-db-trigger", getLogGroupName(), new AWS.CloudWatchLogs());
 const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
 
 
@@ -72,7 +70,7 @@ export async function handler(event: DynamoDBStreamEvent, context: Context) {
         logger.info(`Detected ${messages.length} message(s) for sending to websocket clients`);
 
         if (messages.length > 0) {
-            const table = await dbTableProvider.get(TableName);
+            const table = await dbTableProvider.get(getTableName());
 
             const connections = [];
 

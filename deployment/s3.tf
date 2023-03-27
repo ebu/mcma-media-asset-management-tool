@@ -14,11 +14,8 @@ resource "aws_s3_bucket" "media" {
 
   lifecycle {
     ignore_changes = [
-      acceleration_status,
-      acl,
       cors_rule,
       lifecycle_rule,
-      policy,
       server_side_encryption_configuration,
     ]
   }

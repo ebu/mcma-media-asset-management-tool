@@ -2,10 +2,10 @@ import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
 
 import { McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { S3Locator } from "@mcma/aws-s3";
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-09-cleanup-temp-location", process.env.LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-09-cleanup-temp-location", getLogGroupName());
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const s3 = new AWS.S3();

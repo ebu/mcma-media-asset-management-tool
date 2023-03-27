@@ -43,9 +43,9 @@ resource "aws_iam_role_policy" "step_01_validate_input" {
           "logs:PutLogEvents",
         ]
         Resource = [
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:${var.log_group.name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda/${aws_lambda_function.step_01_validate_input.function_name}:*",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/aws/lambda-insights:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:${var.log_group.name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.step_01_validate_input.function_name}:*",
+          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda-insights:*",
         ]
       },
       {
@@ -76,15 +76,17 @@ resource "aws_lambda_function" "step_01_validate_input" {
   role             = aws_iam_role.step_01_validate_input.arn
   handler          = "index.handler"
   source_code_hash = filebase64sha256("${path.module}/01-validate-input/build/dist/lambda.zip")
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   timeout          = "900"
   memory_size      = "2048"
 
-  layers = var.enhanced_monitoring_enabled ? ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"] : []
+  layers = var.enhanced_monitoring_enabled && contains(keys(local.lambda_insights_extensions), var.aws_region) ? [
+    local.lambda_insights_extensions[var.aws_region]
+  ] : []
 
   environment {
     variables = {
-      LogGroupName = var.log_group.name
+      MCMA_LOG_GROUP_NAME = var.log_group.name
     }
   }
 

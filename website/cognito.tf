@@ -77,7 +77,7 @@ resource "aws_iam_role" "cognito_authenticated" {
         }
         Action    = "sts:AssumeRoleWithWebIdentity",
         Condition = {
-          StringEquals             = {
+          StringEquals = {
             "cognito-identity.amazonaws.com:aud" = aws_cognito_identity_pool.main.id
           }
           "ForAnyValue:StringLike" = {
@@ -108,9 +108,9 @@ resource "aws_iam_role_policy" "authenticated" {
         }
       },
       {
-        Sid      = "ReadWriteDeleteYourObjects"
-        Effect   = "Allow"
-        Action   = [
+        Sid    = "ReadWriteDeleteYourObjects"
+        Effect = "Allow"
+        Action = [
           "s3:GetObject",
           "s3:PutObject",
           "s3:DeleteObject",

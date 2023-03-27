@@ -1,14 +1,14 @@
 import { APIGatewayEventDefaultAuthorizerContext, APIGatewayEventRequestContextWithAuthorizer, Context, ScheduledEvent } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
-import { Query } from "@mcma/data";
+import { getTableName, Query } from "@mcma/data";
 
-const { CloudWatchEventRule, LogGroupName, TableName } = process.env;
+const { CLOUD_WATCH_EVENT_RULE } = process.env;
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-ping", LogGroupName, new AWS.CloudWatchLogs());
+const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-ping", getLogGroupName(), new AWS.CloudWatchLogs());
 const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
 
 export async function handler(event: ScheduledEvent, context: Context) {
@@ -22,9 +22,9 @@ export async function handler(event: ScheduledEvent, context: Context) {
         logger.debug(context);
 
         const cloudWatchEvents = new AWS.CloudWatchEvents();
-        await cloudWatchEvents.disableRule({ Name: CloudWatchEventRule }).promise();
+        await cloudWatchEvents.disableRule({ Name: CLOUD_WATCH_EVENT_RULE }).promise();
 
-        const table = await dbTableProvider.get(TableName);
+        const table = await dbTableProvider.get(getTableName());
 
         const connections = [];
 
@@ -68,7 +68,7 @@ export async function handler(event: ScheduledEvent, context: Context) {
                 await Promise.all(postCalls);
             } finally {
                 const cloudWatchEvents = new AWS.CloudWatchEvents();
-                await cloudWatchEvents.enableRule({ Name: CloudWatchEventRule }).promise();
+                await cloudWatchEvents.enableRule({ Name: CLOUD_WATCH_EVENT_RULE }).promise();
             }
         }
     } catch (error) {

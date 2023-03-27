@@ -12,7 +12,7 @@ resource "aws_iam_role" "workflow" {
         Principal = {
           Service = "states.${var.aws_region}.amazonaws.com"
         }
-        Effect    = "Allow"
+        Effect = "Allow"
       }
     ]
   })
@@ -50,15 +50,15 @@ resource "aws_sfn_state_machine" "workflow" {
     Comment = "Media Ingest"
     StartAt = "Validate input"
     States  = {
-      "Validate input"             = {
+      "Validate input" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_01_validate_input.arn
         ResultPath = null
         Next       = "Celebrity Recognition"
       }
       "Celebrity Recognition" = {
-        Type       = "Parallel"
-        Branches   = [
+        Type     = "Parallel"
+        Branches = [
           {
             StartAt = "Start AI job"
             States  = {
@@ -85,11 +85,11 @@ resource "aws_sfn_state_machine" "workflow" {
         OutputPath = "$[1]"
         Next       = "Register output"
       }
-      "Register output"    = {
+      "Register output" = {
         Type       = "Task"
         Resource   = aws_lambda_function.step_03_register_output.arn
         ResultPath = null
-        End       = true
+        End        = true
       }
     }
   })
@@ -99,5 +99,5 @@ resource "aws_sfn_state_machine" "workflow" {
 
 locals {
   ## local variable to avoid cyclic dependency
-  state_machine_arn = "arn:aws:states:${var.aws_region}:${var.aws_account_id}:stateMachine:${var.prefix}"
+  state_machine_arn = "arn:aws:states:${var.aws_region}:${data.aws_caller_identity.current.account_id}:stateMachine:${var.prefix}"
 }

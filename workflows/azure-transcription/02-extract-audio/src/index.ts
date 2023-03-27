@@ -9,18 +9,18 @@ import {
     NotificationEndpoint,
     NotificationEndpointProperties, TransformJob
 } from "@mcma/core";
-import { AwsCloudWatchLoggerProvider } from "@mcma/aws-logger";
+import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
 import { awsV4Auth } from "@mcma/aws-client";
 
-const { ActivityArn } = process.env;
+const { ACTIVITY_ARN } = process.env;
 
 const AWS = AWSXRay.captureAWS(require("aws-sdk"));
 const stepFunctions = new AWS.StepFunctions();
 const s3 = new AWS.S3({ signatureVersion: "v4" });
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("azure-transcription-02-extract-audio", process.env.LogGroupName);
+const loggerProvider = new AwsCloudWatchLoggerProvider("azure-transcription-02-extract-audio", getLogGroupName());
 const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
 
 type InputEvent = {
@@ -41,7 +41,7 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(event);
         logger.debug(context);
 
-        const data = await stepFunctions.getActivityTask({ activityArn: ActivityArn }).promise();
+        const data = await stepFunctions.getActivityTask({ activityArn: ACTIVITY_ARN }).promise();
         logger.info(data);
 
         const taskToken = data.taskToken;

@@ -12,8 +12,6 @@ resource "aws_s3_bucket" "website" {
 
   lifecycle {
     ignore_changes = [
-      acl,
-      policy,
       server_side_encryption_configuration,
     ]
   }
@@ -115,7 +113,7 @@ resource "aws_s3_object" "config" {
       UserPoolId = aws_cognito_user_pool.main.id
       ClientId   = aws_cognito_user_pool_client.main.id
     }
-    MediaBucket  = var.media_bucket.id
+    MEDIA_BUCKET = var.media_bucket.id
     RestApiUrl   = var.mam_service.rest_api_url
     WebSocketUrl = var.mam_service.websocket_url
   })

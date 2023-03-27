@@ -99,5 +99,5 @@ resource "aws_sfn_state_machine" "workflow" {
 
 locals {
   ## local variable to avoid cyclic dependency
-  state_machine_arn = "arn:aws:states:${var.aws_region}:${var.aws_account_id}:stateMachine:${var.prefix}"
+  state_machine_arn = "arn:aws:states:${var.aws_region}:${data.aws_caller_identity.current.account_id}:stateMachine:${var.prefix}"
 }
