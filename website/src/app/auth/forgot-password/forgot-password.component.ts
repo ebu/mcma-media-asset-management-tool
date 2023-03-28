@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 
 import * as passwordGenerator from "generate-password";
@@ -14,17 +14,17 @@ import { MatStepper } from "@angular/material/stepper";
   styleUrls: ["./forgot-password.component.scss"]
 })
 export class ForgotPasswordComponent {
-  public usernameForm: FormGroup;
+  public usernameForm: UntypedFormGroup;
   public usernameErrorMessage: string;
   public usernameCompleted: boolean;
 
-  public passwordResetCodeForm: FormGroup;
+  public passwordResetCodeForm: UntypedFormGroup;
   public passwordResetCodeErrorMessage: string;
   public passwordResetCodeMedium: string;
   public passwordResetCodeDestination: string;
   public passwordResetCodeCompleted: boolean;
 
-  public setNewPasswordForm: FormGroup;
+  public setNewPasswordForm: UntypedFormGroup;
   public setNewPasswordErrorMessage: string;
 
   public passwordMatcher: PasswordErrorStateMatcher;
@@ -32,7 +32,7 @@ export class ForgotPasswordComponent {
   private tempPassword: string;
 
   constructor(
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private router: Router,
     private auth: CognitoAuthService
   ) {
@@ -64,7 +64,7 @@ export class ForgotPasswordComponent {
     this.tempPassword = "";
   }
 
-  private static checkPasswords(group: FormGroup) {
+  private static checkPasswords(group: UntypedFormGroup) {
     const password = group?.get("password")?.value;
     const confirmPassword = group?.get("confirmPassword")?.value;
 

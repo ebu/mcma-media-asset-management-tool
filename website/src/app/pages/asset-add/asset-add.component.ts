@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { Router } from "@angular/router";
 import { FileInput } from "ngx-material-file-input";
@@ -17,12 +17,12 @@ import { zip } from "rxjs";
   styleUrls: ["./asset-add.component.scss"]
 })
 export class AssetAddComponent implements OnInit {
-  public form: FormGroup;
+  public form: UntypedFormGroup;
 
   constructor(
     private router: Router,
     private dialog: MatDialog,
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private config: ConfigService,
     private data: DataService,
     private logger: LoggerService,

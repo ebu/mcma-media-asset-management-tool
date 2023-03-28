@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 
 import { CognitoAuthService, LoggerService } from "../../services";
@@ -10,11 +10,11 @@ import { CognitoAuthService, LoggerService } from "../../services";
   styleUrls: ["./login.component.scss"]
 })
 export class LoginComponent {
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public loginInvalid: boolean;
 
   constructor(
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private router: Router,
     private auth: CognitoAuthService,
     private logger: LoggerService

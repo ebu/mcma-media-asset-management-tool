@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 
 import { CognitoAuthService } from "../../services";
@@ -11,13 +11,13 @@ import { PasswordErrorStateMatcher } from "../utils";
   styleUrls: ["./new-password-challenge.component.scss"]
 })
 export class NewPasswordChallengeComponent {
-  public form: FormGroup;
+  public form: UntypedFormGroup;
   public errorMessage: string;
 
   public passwordMatcher: PasswordErrorStateMatcher;
 
   constructor(
-    private fb: FormBuilder,
+    private fb: UntypedFormBuilder,
     private router: Router,
     private auth: CognitoAuthService
   ) {
@@ -30,7 +30,7 @@ export class NewPasswordChallengeComponent {
     }, { validators: NewPasswordChallengeComponent.checkPasswords });
   }
 
-  private static checkPasswords(group: FormGroup) {
+  private static checkPasswords(group: UntypedFormGroup) {
     const password = group?.get("password")?.value;
     const confirmPassword = group?.get("confirmPassword")?.value;
 
