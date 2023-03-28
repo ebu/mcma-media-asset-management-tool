@@ -98,6 +98,24 @@ task npmDedup(type: Exec) {
     args "dedup"
 }
 
+task npmAudit(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file("package.json")
+    outputs.file("package-lock.json")
+    outputs.dir("node_modules")
+    commandLine npmExecutable
+    args "audit"
+}
+
+task npmAuditFix(type: Exec) {
+    dependsOn ":verifyNodeJS"
+    inputs.file("package.json")
+    outputs.file("package-lock.json")
+    outputs.dir("node_modules")
+    commandLine npmExecutable
+    args "audit", "fix"
+}
+
 task tsc(type: Exec) {
     dependsOn ":verifyNodeJS"
     dependsOn ":verifyTsc"
