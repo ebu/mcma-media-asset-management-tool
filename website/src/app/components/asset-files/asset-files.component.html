@@ -24,15 +24,15 @@
           <table>
             <tr>
               <td>Type:</td>
-              <td>{{selectedMediaEssence?.["@type"]}}</td>
+              <td>{{selectedMediaEssence["@type"]}}</td>
             </tr>
             <tr>
               <td>File size:</td>
-              <td>{{selectedMediaEssence?.size | filesize}}</td>
+              <td>{{selectedMediaEssence.size | filesize}}</td>
             </tr>
-            <tr *ngIf="selectedMediaEssence?.duration">
+            <tr *ngIf="selectedMediaEssence.duration">
               <td>Duration:</td>
-              <td>{{selectedMediaEssence?.duration | duration}}</td>
+              <td>{{selectedMediaEssence.duration | duration}}</td>
             </tr>
           </table>
         </div>
