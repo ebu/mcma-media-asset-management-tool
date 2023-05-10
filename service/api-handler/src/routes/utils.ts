@@ -1,6 +1,7 @@
 import { DocumentDatabaseTable } from "@mcma/data";
-import { S3 } from "aws-sdk";
 import { S3Locator } from "@mcma/aws-s3";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export async function parentResourceExists(path: string, dbTable: DocumentDatabaseTable): Promise<boolean> {
     const pathComponents = path.split("/").filter(c => c !== "");
@@ -18,11 +19,11 @@ export async function parentResourceExists(path: string, dbTable: DocumentDataba
     return !!parentProperties;
 }
 
-export function signUrl(url: string, s3: S3): string {
+export async function signUrl(url: string, s3Client: S3Client): Promise<string> {
     const locator = new S3Locator({ url });
-    return s3.getSignedUrl("getObject", {
+    const command = new GetObjectCommand({
         Bucket: locator.bucket,
         Key: locator.key,
-        Expires: 12 * 3600
     });
+    return await getSignedUrl(s3Client, command, { expiresIn: 12 * 3600 });
 }

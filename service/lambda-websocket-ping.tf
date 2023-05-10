@@ -93,6 +93,7 @@ resource "aws_iam_role_policy" "websocket_ping" {
         Effect = "Allow"
         Action = [
           "events:EnableRule",
+          "events:DescribeRule",
           "events:DisableRule",
         ]
         Resource = aws_cloudwatch_event_rule.websocket_ping.arn
@@ -121,12 +122,12 @@ resource "aws_lambda_function" "websocket_ping" {
     aws_iam_role_policy.websocket_ping
   ]
 
-  filename         = "${path.module}/websocket-ping/build/dist/lambda.zip"
   function_name    = local.lambda_name_websocket_ping
   role             = aws_iam_role.websocket_ping.arn
   handler          = "index.handler"
+  filename         = "${path.module}/websocket-ping/build/dist/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/websocket-ping/build/dist/lambda.zip")
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   timeout          = "30"
   memory_size      = "2048"
 

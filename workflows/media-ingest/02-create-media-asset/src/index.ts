@@ -1,19 +1,20 @@
 import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 import { McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
 import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { S3Locator } from "@mcma/aws-s3";
-
-import { MediaAsset, MediaAssetWorkflow, MediaWorkflowProperties } from "@local/model";
-import { DataController } from "@local/data";
 import { getTableName } from "@mcma/data";
 import { getPublicUrl } from "@mcma/api";
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+import { MediaAsset, MediaAssetWorkflow, MediaWorkflowProperties } from "@local/model";
+import { DataController } from "@local/data";
+
+const dynamoDBClient = AWSXRay.captureAWSv3Client(new DynamoDBClient({}));
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-02-create-media-asset", getLogGroupName());
-const dataController = new DataController(getTableName(), getPublicUrl(), true, new AWS.DynamoDB());
+const dataController = new DataController(getTableName(), getPublicUrl(), true, dynamoDBClient);
 
 type InputEvent = {
     input: {

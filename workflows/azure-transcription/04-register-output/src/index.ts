@@ -12,15 +12,18 @@ import { AudioEssence, AudioTechnicalMetadata, BitRateMode, MediaAssetWorkflow, 
 import { DataController } from "@local/data";
 import { getTableName } from "@mcma/data";
 import { getPublicUrl } from "@mcma/api";
+import { S3Client } from "@aws-sdk/client-s3";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { Upload } from "@aws-sdk/lib-storage";
 
 const { MEDIA_BUCKET } = process.env;
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
-const s3 = new AWS.S3();
+const dynamoDBClient = AWSXRay.captureAWSv3Client(new DynamoDBClient({}));
+const s3Client = AWSXRay.captureAWSv3Client(new S3Client({}));
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("azure-transcription-04-register-output", getLogGroupName());
-const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
-const dataController = new DataController(getTableName(), getPublicUrl(), true, new AWS.DynamoDB());
+const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth()));
+const dataController = new DataController(getTableName(), getPublicUrl(), true, dynamoDBClient);
 
 type InputEvent = {
     input: {
@@ -85,16 +88,19 @@ export async function handler(event: InputEvent, context: Context) {
             }
             const contentType = response.headers["content-type"];
 
-            const uploadParams: AWS.S3.Types.PutObjectRequest = {
-                Bucket: MEDIA_BUCKET,
-                Key: key,
-                Body: response.data,
-                ContentType: contentType,
-            };
-            await s3.upload(uploadParams).promise();
+            const upload = new Upload({
+                client: s3Client,
+                params:{
+                    Bucket: MEDIA_BUCKET,
+                    Key: key,
+                    Body: response.data,
+                    ContentType: contentType,
+                }
+            });
+            await upload.done();
 
             logger.info("Creating Media Essence");
-            const url = await buildS3Url(uploadParams.Bucket, uploadParams.Key, s3);
+            const url = await buildS3Url(MEDIA_BUCKET, key, s3Client);
 
             const locators = [new S3Locator({ url: url })];
             const tags: string[] = ["AzureTranscription"];

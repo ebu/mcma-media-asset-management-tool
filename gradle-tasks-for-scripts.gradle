@@ -4,6 +4,6 @@ task run(type: Exec) {
     dependsOn tsc
     commandLine npmExecutable
     args "start"
-    environment "AwsProfile", awsProfile
-    environment "AwsRegion", awsRegion
+    environment "AWS_PROFILE", awsProfile
+    environment "AWS_REGION", awsRegion
 }

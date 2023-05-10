@@ -1,4 +1,4 @@
-import { Rekognition } from "aws-sdk";
+import { BoundingBox } from "@aws-sdk/client-rekognition";
 
 export const ColorPalette = ["#ec3445", "#fcdd30", "#51bc37", "#1582fd", "#733294", "#fb761f", "#ab526b", "#cdb380", "#005f6b", "#f02475", "#aab3ab", "#607848", "#ff4e50", "#40c0cb", "#e1edb9", "#d3ce3d", "#5e8c6a", "#f0a830", "#2a2829", "#ff8c94", "#5d4157", "#6a4a3c", "#bef202", "#f9f2e7"];
 
@@ -6,7 +6,7 @@ export function getColor(idx: number): string {
   return ColorPalette[idx % ColorPalette.length];
 }
 
-export function drawLabeledBox(text: string, color: string, boundingBox: Rekognition.BoundingBox, context: CanvasRenderingContext2D, screenWidth: number, screenHeight: number) {
+export function drawLabeledBox(text: string, color: string, boundingBox: BoundingBox, context: CanvasRenderingContext2D, screenWidth: number, screenHeight: number) {
   const x = (boundingBox?.Left ?? -1) * screenWidth;
   const y = (boundingBox?.Top ?? -1) * screenHeight;
   const w = (boundingBox?.Width ?? -1) * screenWidth;

@@ -28,17 +28,9 @@ export class AwsV4Interceptor implements HttpInterceptor {
   private signRequest(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return zip(
       this.injector.get(ConfigService).get<string>("AwsRegion"),
-      this.injector.get(CognitoAuthService).getCredentials(),
+      this.injector.get(CognitoAuthService).getCredentialsProvider(),
     ).pipe(
-      map(([region, credentials]) => {
-        return {
-          accessKeyId: credentials.accessKeyId,
-          secretAccessKey: credentials.secretAccessKey,
-          sessionToken: credentials.sessionToken,
-          region,
-        };
-      }),
-      map((credentials) => new AwsV4Authenticator(credentials)),
+      map(([region, credentials]) => new AwsV4Authenticator({ credentials, region })),
       switchMap(authenticator => {
         // converting Angular HTTP Request to Axios Request format so we can use the MCMA AWS4 Authenticator
         const headers: AxiosRequestHeaders = {};

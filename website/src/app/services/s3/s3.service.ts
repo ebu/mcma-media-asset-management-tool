@@ -6,7 +6,7 @@ import { LoggerService } from "../../services/logger";
 
 import { S3FileUploader } from "./s3-file-uploader";
 import { CognitoAuthService } from "../cognito-auth";
-import { S3Provider } from "./s3-provider";
+import { S3ClientProvider } from "./s3-client-provider";
 
 @Injectable({
   providedIn: "root"
@@ -20,15 +20,16 @@ export class S3Service {
   ) {
   }
 
-  private getS3Info(): Observable<{ s3Provider: S3Provider, bucket: string, identityId: string }> {
+  private getS3Info(): Observable<{ s3Provider: S3ClientProvider, bucket: string, identityId: string }> {
     return zip(
+      this.auth.getCredentialsProvider(),
       this.auth.getCredentials(),
       this.config.get<string>("AwsRegion"),
-      this.config.get<string>("MEDIA_BUCKET")
+      this.config.get<string>("MediaBucket")
     ).pipe(
-      map(([credentials, region, bucket]) => {
+      map(([credentialsProvider, credentials, region, bucket]) => {
           return {
-            s3Provider: new S3Provider(this.auth, this.logger, region, credentials),
+            s3Provider: new S3ClientProvider(this.auth, this.logger, region, credentialsProvider),
             bucket: bucket,
             identityId: credentials.identityId,
           };

@@ -9,16 +9,6 @@ locals {
 resource "aws_s3_bucket" "media" {
   bucket        = local.media_bucket_name
   force_destroy = true
-
-
-
-  lifecycle {
-    ignore_changes = [
-      cors_rule,
-      lifecycle_rule,
-      server_side_encryption_configuration,
-    ]
-  }
 }
 
 resource "aws_s3_bucket_policy" "media" {
@@ -58,11 +48,6 @@ resource "aws_s3_bucket_policy" "media" {
       }
     ]
   })
-}
-
-resource "aws_s3_bucket_acl" "media" {
-  bucket = aws_s3_bucket.media.id
-  acl    = "private"
 }
 
 resource "aws_s3_bucket_accelerate_configuration" "media" {

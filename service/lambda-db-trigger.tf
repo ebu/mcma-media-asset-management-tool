@@ -128,12 +128,12 @@ resource "aws_lambda_function" "db_trigger" {
     aws_iam_role_policy.db_trigger
   ]
 
-  filename         = "${path.module}/db-trigger/build/dist/lambda.zip"
   function_name    = local.lambda_name_db_trigger
   role             = aws_iam_role.db_trigger.arn
   handler          = "index.handler"
+  filename         = "${path.module}/db-trigger/build/dist/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/db-trigger/build/dist/lambda.zip")
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   timeout          = "30"
   memory_size      = "2048"
 

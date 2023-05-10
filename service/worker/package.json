@@ -4,22 +4,23 @@
     "private": true,
     "license": "Apache-2.0",
     "dependencies": {
-        "@mcma/aws-client": "0.15.0",
-        "@mcma/aws-dynamodb": "0.15.0",
-        "@mcma/aws-logger": "0.15.0",
-        "@mcma/aws-s3": "0.15.0",
-        "@mcma/api": "0.15.0",
-        "@mcma/core": "0.15.0",
-        "@mcma/client": "0.15.0",
-        "@mcma/data": "0.15.0",
-        "@mcma/worker": "0.15.0",
-        "aws-sdk": "^2.1000.0",
-        "aws-xray-sdk": "^3.3.4",
-        "uuid": "^8.3.2"
+        "@aws-sdk/client-dynamodb": "^3.300.0",
+        "@aws-sdk/client-s3": "^3.300.0",
+        "@mcma/aws-client": "0.16.0",
+        "@mcma/aws-dynamodb": "0.16.0",
+        "@mcma/aws-logger": "0.16.0",
+        "@mcma/aws-s3": "0.16.0",
+        "@mcma/api": "0.16.0",
+        "@mcma/core": "0.16.0",
+        "@mcma/client": "0.16.0",
+        "@mcma/data": "0.16.0",
+        "@mcma/worker": "0.16.0",
+        "aws-xray-sdk": "^3.5.0",
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
-        "@types/aws-lambda": "^8.10.51",
-        "@types/node": "^16.11.60",
-        "@types/uuid": "^8.3.4"
+        "@types/aws-lambda": "^8.10.115",
+        "@types/node": "^18.15.10",
+        "@types/uuid": "^9.0.1"
     }
 }

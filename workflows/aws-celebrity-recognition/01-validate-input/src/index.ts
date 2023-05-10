@@ -1,15 +1,14 @@
 import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
 import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { S3Locator } from "@mcma/aws-s3";
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+const s3Client = AWSXRay.captureAWSv3Client(new S3Client({}));
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("aws-celebrity-recognition-01-validate-input", getLogGroupName());
-
-const s3 = new AWS.S3();
 
 type InputEvent = {
     input?: {
@@ -49,10 +48,10 @@ export async function handler(event: InputEvent, context: Context) {
         const { inputFile } = event.input;
 
         try {
-            const result = await s3.headObject({
+            const result = await s3Client.send(new HeadObjectCommand({
                 Bucket: inputFile.bucket,
                 Key: inputFile.key,
-            }).promise();
+            }));
 
             logger.info(result);
         } catch (error) {

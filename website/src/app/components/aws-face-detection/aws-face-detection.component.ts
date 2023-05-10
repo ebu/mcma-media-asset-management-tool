@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
-import { FaceDetail, FaceDetection, GetFaceDetectionResponse } from "aws-sdk/clients/rekognition";
+import { FaceDetail, FaceDetection, GetFaceDetectionResponse } from "@aws-sdk/client-rekognition";
 import { from, Subscription } from "rxjs";
 import { DataService, DrawHandler, LoggerService, VideoService } from "../../services";
 import { mergeMap, switchMap } from "rxjs/operators";

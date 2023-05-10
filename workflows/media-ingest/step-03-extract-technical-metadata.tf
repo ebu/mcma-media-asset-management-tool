@@ -86,16 +86,18 @@ resource "aws_iam_role_policy" "step_03_extract_technical_metadata" {
 }
 
 resource "aws_lambda_function" "step_03_extract_technical_metadata" {
-  filename         = "${path.module}/03-extract-technical-metadata/build/dist/lambda.zip"
   function_name    = format("%.64s", "${var.prefix}-03-extract-technical-metadata")
   role             = aws_iam_role.step_03_extract_technical_metadata.arn
   handler          = "index.handler"
+  filename         = "${path.module}/03-extract-technical-metadata/build/dist/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/03-extract-technical-metadata/build/dist/lambda.zip")
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   timeout          = "900"
   memory_size      = "2048"
 
-  layers = var.enhanced_monitoring_enabled ? ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"] : []
+  layers = var.enhanced_monitoring_enabled && contains(keys(local.lambda_insights_extensions), var.aws_region) ? [
+    local.lambda_insights_extensions[var.aws_region]
+  ] : []
 
   environment {
     variables = {

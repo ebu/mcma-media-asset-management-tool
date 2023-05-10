@@ -5,19 +5,19 @@ import { MediaEssence } from "@local/model";
 import { getTableName } from "@mcma/data";
 
 import { parentResourceExists, signUrl } from "./utils";
-import { S3 } from "aws-sdk";
+import { S3Client } from "@aws-sdk/client-s3";
 
-function signMediaEssenceUrls(mediaEssence: MediaEssence, s3: S3) {
+async function signMediaEssenceUrls(mediaEssence: MediaEssence, s3Client: S3Client) {
     if (mediaEssence.locators) {
         for (const locator of mediaEssence.locators) {
             if (locator["@type"] === "S3Locator") {
-                locator.url = signUrl(locator.url, s3);
+                locator.url = await signUrl(locator.url, s3Client);
             }
         }
     }
 }
 
-export function buildAssetEssenceRoutes(dbTableProvider: DynamoDbTableProvider, s3: S3) {
+export function buildAssetEssenceRoutes(dbTableProvider: DynamoDbTableProvider, s3Client: S3Client) {
     const routes = new DefaultRouteCollection(dbTableProvider, MediaEssence, "/assets/{assetId}/essences");
 
     routes.query.onStarted = async requestContext => {
@@ -34,11 +34,11 @@ export function buildAssetEssenceRoutes(dbTableProvider: DynamoDbTableProvider, 
     routes.remove("update");
 
     routes.get.onCompleted = async (requestContext, mediaEssence) => {
-        signMediaEssenceUrls(mediaEssence, s3);
+        await signMediaEssenceUrls(mediaEssence, s3Client);
     };
     routes.query.onCompleted = async (requestContext, queryResults) => {
         for (const mediaEssence of queryResults.results) {
-            signMediaEssenceUrls(mediaEssence, s3);
+            await signMediaEssenceUrls(mediaEssence, s3Client);
         }
     };
 

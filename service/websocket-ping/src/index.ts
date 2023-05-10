@@ -1,15 +1,24 @@
 import { APIGatewayEventDefaultAuthorizerContext, APIGatewayEventRequestContextWithAuthorizer, Context, ScheduledEvent } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { ApiGatewayManagementApiClient, GoneException, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
+import { CloudWatchEventsClient } from "@aws-sdk/client-cloudwatch-events";
+import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
 import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 import { getTableName, Query } from "@mcma/data";
 
+import { disableEventRule, enableEventRule } from "@local/data";
+
 const { CLOUD_WATCH_EVENT_RULE } = process.env;
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+const cloudWatchEventsClient = AWSXRay.captureAWSv3Client(new CloudWatchEventsClient({}));
+const cloudWatchLogsClient = AWSXRay.captureAWSv3Client(new CloudWatchLogsClient({}));
+const dynamoDBClient = AWSXRay.captureAWSv3Client(new DynamoDBClient({}));
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-ping", getLogGroupName(), new AWS.CloudWatchLogs());
-const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
+const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-ping", getLogGroupName(), cloudWatchLogsClient);
+const dbTableProvider = new DynamoDbTableProvider({}, dynamoDBClient);
 
 export async function handler(event: ScheduledEvent, context: Context) {
     console.log(JSON.stringify(event, null, 2));
@@ -21,10 +30,9 @@ export async function handler(event: ScheduledEvent, context: Context) {
         logger.debug(event);
         logger.debug(context);
 
-        const cloudWatchEvents = new AWS.CloudWatchEvents();
-        await cloudWatchEvents.disableRule({ Name: CLOUD_WATCH_EVENT_RULE }).promise();
-
         const table = await dbTableProvider.get(getTableName());
+
+        await disableEventRule(CLOUD_WATCH_EVENT_RULE, table, cloudWatchEventsClient, context.awsRequestId, logger);
 
         const connections = [];
 
@@ -46,17 +54,17 @@ export async function handler(event: ScheduledEvent, context: Context) {
         if (connections.length > 0) {
             try {
                 const postCalls = connections.map(async (connection) => {
-                    const managementApi = new AWS.ApiGatewayManagementApi({
-                        endpoint: connection.domainName + "/" + connection.stage
-                    });
+                    const managementApiClient = AWSXRay.captureAWSv3Client(new ApiGatewayManagementApiClient({
+                        endpoint: `https://${connection.domainName}/${connection.stage}`
+                    }));
 
                     try {
-                        await managementApi.postToConnection({
+                        await managementApiClient.send(new PostToConnectionCommand({
                             ConnectionId: connection.connectionId,
-                            Data: JSON.stringify({ operation: "Ping" }),
-                        }).promise();
+                            Data: new TextEncoder().encode(JSON.stringify({ operation: "Ping" })),
+                        }));
                     } catch (e) {
-                        if (e.statusCode === 410) {
+                        if (e instanceof GoneException) {
                             logger.info("Removing stale connection " + connection.connectionId);
                             await table.delete("/connections/" + connection.connectionId);
                         } else {
@@ -67,8 +75,7 @@ export async function handler(event: ScheduledEvent, context: Context) {
 
                 await Promise.all(postCalls);
             } finally {
-                const cloudWatchEvents = new AWS.CloudWatchEvents();
-                await cloudWatchEvents.enableRule({ Name: CLOUD_WATCH_EVENT_RULE }).promise();
+                await enableEventRule(CLOUD_WATCH_EVENT_RULE, table, cloudWatchEventsClient, context.awsRequestId, logger);
             }
         }
     } catch (error) {

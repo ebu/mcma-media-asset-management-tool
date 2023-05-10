@@ -86,12 +86,12 @@ resource "aws_iam_role_policy" "step_02_transcription" {
 }
 
 resource "aws_lambda_function" "step_02_transcription" {
-  filename         = "${path.module}/02-transcription/build/dist/lambda.zip"
   function_name    = format("%.64s", "${var.prefix}-02-transcription")
   role             = aws_iam_role.step_02_transcription.arn
   handler          = "index.handler"
+  filename         = "${path.module}/02-transcription/build/dist/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/02-transcription/build/dist/lambda.zip")
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   timeout          = "900"
   memory_size      = "2048"
 

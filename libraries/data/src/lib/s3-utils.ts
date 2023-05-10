@@ -1,4 +1,5 @@
-import { AWSError, S3 } from "aws-sdk";
+import {
+    AbortMultipartUploadCommand, CompleteMultipartUploadCommand, CreateMultipartUploadCommand, HeadObjectCommand, S3Client, UploadPartCopyCommand, UploadPartCopyCommandOutput } from "@aws-sdk/client-s3"
 
 interface PartRequest {
     Bucket: string
@@ -7,17 +8,17 @@ interface PartRequest {
     CopySourceRange: string
     PartNumber: number
     UploadId: string,
-    promise?: Promise<AWS.S3.Types.UploadPartCopyOutput>,
-    result?: AWS.S3.Types.UploadPartCopyOutput,
-    error?: AWSError,
+    promise?: Promise<UploadPartCopyCommandOutput>,
+    result?: UploadPartCopyCommandOutput,
+    error?: any,
 }
 
 async function finishUploadPart(uploadingRequests: PartRequest[], finishedRequests: PartRequest[], errorRequests: PartRequest[]) {
     const request = await Promise.race(uploadingRequests.map(request =>
-        request.promise.then((result: AWS.S3.Types.UploadPartCopyOutput) => {
+        request.promise.then((result: UploadPartCopyCommandOutput) => {
             request.result = result;
             return request;
-        }).catch((error: AWSError) => {
+        }).catch((error: any) => {
             request.error = error;
             return request;
         })
@@ -33,7 +34,7 @@ async function finishUploadPart(uploadingRequests: PartRequest[], finishedReques
     uploadingRequests.splice(idx, 1);
 }
 
-export async function multipartCopy(source: { bucket: string, key: string }, target: { bucket: string, key: string }, s3?: S3, options?: { multipartSize: number, maxConcurrentTransfers: number }) {
+export async function multipartCopy(source: { bucket: string, key: string }, target: { bucket: string, key: string }, s3Client?: S3Client, options?: { multipartSize: number, maxConcurrentTransfers: number }) {
     let multipartSize: number = options?.multipartSize;
     let maxConcurrentTransfers: number = options?.maxConcurrentTransfers;
 
@@ -45,18 +46,18 @@ export async function multipartCopy(source: { bucket: string, key: string }, tar
         multipartSize = 64 * 1024 * 1024;
     }
 
-    const createResponse = await s3.createMultipartUpload({
+    const createResponse = await s3Client.send(new CreateMultipartUploadCommand({
         Bucket: target.bucket,
         Key: target.key
-    }).promise();
+    }));
 
     const uploadId = createResponse.UploadId;
 
     try {
-        const metadata = await s3.headObject({
+        const metadata = await s3Client.send(new HeadObjectCommand({
             Bucket: source.bucket,
             Key: source.key,
-        }).promise();
+        }));
 
         const preparedRequests: PartRequest[] = [];
         const uploadingRequests: PartRequest[] = [];
@@ -88,7 +89,7 @@ export async function multipartCopy(source: { bucket: string, key: string }, tar
             }
 
             const request = preparedRequests.shift();
-            request.promise = s3.uploadPartCopy(request).promise();
+            request.promise = s3Client.send(new UploadPartCopyCommand(request));
             uploadingRequests.push(request);
         }
 
@@ -108,20 +109,20 @@ export async function multipartCopy(source: { bucket: string, key: string }, tar
         });
         parts.sort((a, b) => a.PartNumber - b.PartNumber);
 
-        await s3.completeMultipartUpload({
+        await s3Client.send(new CompleteMultipartUploadCommand({
             Bucket: target.bucket,
             Key: target.key,
             UploadId: uploadId,
             MultipartUpload: {
                 Parts: parts,
             }
-        }).promise();
+        }));
     } catch (error) {
-        await s3.abortMultipartUpload({
+        await s3Client.send(new AbortMultipartUploadCommand({
             Bucket: target.bucket,
             Key: target.key,
             UploadId: uploadId,
-        }).promise();
+        }));
         throw error;
     }
 }

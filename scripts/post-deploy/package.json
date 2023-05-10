@@ -9,10 +9,11 @@
     "main": "build/staging/index.js",
     "license": "Apache-2.0",
     "dependencies": {
-        "@mcma/core": "0.15.0",
-        "aws-sdk": "^2.1000.0"
+        "@aws-sdk/client-cloudfront": "^3.300.0",
+        "@aws-sdk/credential-providers": "^3.300.0",
+        "@mcma/core": "0.16.0"
     },
     "devDependencies": {
-        "@types/node": "^16.11.60"
+        "@types/node": "^18.15.10"
     }
 }

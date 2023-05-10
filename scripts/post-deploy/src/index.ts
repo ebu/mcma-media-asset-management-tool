@@ -1,16 +1,18 @@
 import * as fs from "fs";
-import * as AWS from "aws-sdk";
-import { GetInvalidationResult } from "aws-sdk/clients/cloudfront";
 import { Utils } from "@mcma/core";
+import { fromIni } from "@aws-sdk/credential-providers";
+import {
+    CloudFrontClient,
+    CreateInvalidationCommand,
+    GetInvalidationCommand,
+    GetInvalidationCommandOutput
+} from "@aws-sdk/client-cloudfront";
 
 const TERRAFORM_OUTPUT = "../../deployment/terraform.output.json";
 
-const { AwsProfile, AwsRegion } = process.env;
+const credentialProvider = fromIni();
 
-AWS.config.credentials = new AWS.SharedIniFileCredentials({ profile: AwsProfile });
-AWS.config.region = AwsRegion;
-
-const cloudFront = new AWS.CloudFront();
+const cloudFrontClient = new CloudFrontClient({ credentials: credentialProvider });
 
 export function log(entry?: any) {
     if (typeof entry === "object") {
@@ -23,7 +25,7 @@ export function log(entry?: any) {
 async function invalidateCloudFront(cloudfrontDistributionId: string, websiteUrl: string) {
     if (cloudfrontDistributionId) {
         log(`Invalidating CloudFront Distribution ${cloudfrontDistributionId} for '${websiteUrl}'`);
-        const response = await cloudFront.createInvalidation({
+        const response = await cloudFrontClient.send(new CreateInvalidationCommand({
             DistributionId: cloudfrontDistributionId,
             InvalidationBatch: {
                 Paths: {
@@ -32,15 +34,15 @@ async function invalidateCloudFront(cloudfrontDistributionId: string, websiteUrl
                 },
                 CallerReference: new Date().toISOString()
             }
-        }).promise();
+        }));
 
-        let getInvalidationResponse: GetInvalidationResult;
+        let getInvalidationResponse: GetInvalidationCommandOutput;
         do {
             await Utils.sleep(5000);
-            getInvalidationResponse = await cloudFront.getInvalidation({
+            getInvalidationResponse = await cloudFrontClient.send(new GetInvalidationCommand({
                 Id: response.Invalidation.Id,
                 DistributionId: cloudfrontDistributionId,
-            }).promise();
+            }));
 
             log(`Invalidating CloudFront Distribution ${cloudfrontDistributionId} for '${websiteUrl}' - ${getInvalidationResponse.Invalidation.Status}`);
         } while (getInvalidationResponse.Invalidation.Status !== "Completed");

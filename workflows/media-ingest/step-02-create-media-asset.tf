@@ -95,16 +95,18 @@ resource "aws_iam_role_policy" "step_02_create_media_asset" {
 }
 
 resource "aws_lambda_function" "step_02_create_media_asset" {
-  filename         = "${path.module}/02-create-media-asset/build/dist/lambda.zip"
   function_name    = format("%.64s", "${var.prefix}-02-create-media-asset")
   role             = aws_iam_role.step_02_create_media_asset.arn
   handler          = "index.handler"
+  filename         = "${path.module}/02-create-media-asset/build/dist/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/02-create-media-asset/build/dist/lambda.zip")
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   timeout          = "900"
   memory_size      = "2048"
 
-  layers = var.enhanced_monitoring_enabled ? ["arn:aws:lambda:${var.aws_region}:580247275435:layer:LambdaInsightsExtension:14"] : []
+  layers = var.enhanced_monitoring_enabled && contains(keys(local.lambda_insights_extensions), var.aws_region) ? [
+    local.lambda_insights_extensions[var.aws_region]
+  ] : []
 
   environment {
     variables = {

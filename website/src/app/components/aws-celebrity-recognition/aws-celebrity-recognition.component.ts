@@ -4,7 +4,7 @@ import { MediaAssetWorkflow, MediaEssence } from "@local/model";
 import { DataService, DrawHandler, LoggerService, VideoService } from "../../services";
 import { mergeMap, switchMap } from "rxjs/operators";
 import { from, Subscription } from "rxjs";
-import { CelebrityDetail, CelebrityRecognition, GetCelebrityRecognitionResponse } from "aws-sdk/clients/rekognition";
+import { CelebrityDetail, CelebrityRecognition, GetCelebrityRecognitionResponse } from "@aws-sdk/client-rekognition";
 import { binarySearch, drawLabeledBox, getColor } from "../utils";
 
 export interface CelebrityInfo {

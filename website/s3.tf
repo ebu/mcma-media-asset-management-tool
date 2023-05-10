@@ -9,12 +9,6 @@ locals {
 resource "aws_s3_bucket" "website" {
   bucket        = local.website_bucket_name
   force_destroy = true
-
-  lifecycle {
-    ignore_changes = [
-      server_side_encryption_configuration,
-    ]
-  }
 }
 
 resource "aws_s3_bucket_policy" "website" {
@@ -69,11 +63,6 @@ resource "aws_s3_bucket_policy" "website" {
   })
 }
 
-resource "aws_s3_bucket_acl" "website" {
-  bucket = aws_s3_bucket.website.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
   bucket = aws_s3_bucket.website.id
 
@@ -113,7 +102,7 @@ resource "aws_s3_object" "config" {
       UserPoolId = aws_cognito_user_pool.main.id
       ClientId   = aws_cognito_user_pool_client.main.id
     }
-    MEDIA_BUCKET = var.media_bucket.id
+    MediaBucket  = var.media_bucket.id
     RestApiUrl   = var.mam_service.rest_api_url
     WebSocketUrl = var.mam_service.websocket_url
   })

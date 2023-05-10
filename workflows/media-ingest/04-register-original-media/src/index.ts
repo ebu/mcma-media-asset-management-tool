@@ -1,5 +1,7 @@
 import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { S3Client } from "@aws-sdk/client-s3";
 import { default as axios } from "axios";
 import * as moment from "moment";
 
@@ -8,20 +10,20 @@ import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { buildS3Url, S3Locator } from "@mcma/aws-s3";
 import { AuthProvider, getResourceManagerConfig, ResourceManager } from "@mcma/client";
 import { awsV4Auth } from "@mcma/aws-client";
-
-import { AudioTechnicalMetadata, BitRateMode, MediaAssetProperties, VideoEssence, VideoScanType, VideoTechnicalMetadata } from "@local/model";
-import { DataController, S3Utils } from "@local/data";
 import { getTableName } from "@mcma/data";
 import { getPublicUrl } from "@mcma/api";
 
+import { AudioTechnicalMetadata, BitRateMode, MediaAssetProperties, VideoEssence, VideoScanType, VideoTechnicalMetadata } from "@local/model";
+import { DataController, S3Utils } from "@local/data";
+
 const { MEDIA_BUCKET } = process.env;
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
-const s3 = new AWS.S3();
+const dynamoDBClient = AWSXRay.captureAWSv3Client(new DynamoDBClient({}));
+const s3Client = AWSXRay.captureAWSv3Client(new S3Client({}));
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-04-register-original-media", getLogGroupName());
-const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
-const dataController = new DataController(getTableName(), getPublicUrl(), true, new AWS.DynamoDB());
+const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth()));
+const dataController = new DataController(getTableName(), getPublicUrl(), true, dynamoDBClient);
 
 type InputEvent = {
     input: {
@@ -63,7 +65,7 @@ export async function handler(event: InputEvent, context: Context) {
             bucket: MEDIA_BUCKET,
             key: `${event.data.mediaAssetId.substring(getPublicUrl().length + 1)}/${filename}`
         };
-        await S3Utils.multipartCopy(event.input.inputFile, target, s3);
+        await S3Utils.multipartCopy(event.input.inputFile, target, s3Client);
 
         const tags: string[] = ["Original"];
 
@@ -80,7 +82,7 @@ export async function handler(event: InputEvent, context: Context) {
             size = undefined;
         }
 
-        const videoUrl = await buildS3Url(target.bucket, target.key, s3);
+        const videoUrl = await buildS3Url(target.bucket, target.key, s3Client);
 
         const locators = [new S3Locator({ url: videoUrl })];
 

@@ -1,5 +1,6 @@
 import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { McmaException, McmaTracker, NotificationEndpointProperties } from "@mcma/core";
 import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
@@ -7,8 +8,7 @@ import { S3Locator } from "@mcma/aws-s3";
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("media-ingest-09-cleanup-temp-location", getLogGroupName());
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
-const s3 = new AWS.S3();
+const s3Client = AWSXRay.captureAWSv3Client(new S3Client({}));
 
 type InputEvent = {
     input: {
@@ -35,7 +35,7 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(context);
 
         logger.info("Deleting media file from temp location");
-        await s3.deleteObject({ Bucket: event.input.inputFile.bucket, Key: event.input.inputFile.key }).promise();
+        await s3Client.send(new DeleteObjectCommand({ Bucket: event.input.inputFile.bucket, Key: event.input.inputFile.key }));
 
     } catch (error) {
         logger.error("Failed to register web version");

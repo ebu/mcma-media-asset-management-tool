@@ -64,7 +64,7 @@ module "website" {
 #########################
 
 module "service_registry" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/service-registry/aws/0.15.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/service-registry/aws/0.16.0/module.zip"
 
   prefix = "${var.global_prefix}-service-registry"
 
@@ -84,7 +84,7 @@ module "service_registry" {
 #########################
 
 module "job_processor" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/job-processor/aws/0.15.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/job-processor/aws/0.16.0/module.zip"
 
   prefix = "${var.global_prefix}-job-processor"
 
@@ -116,7 +116,7 @@ module "job_processor" {
 #########################
 
 module "mediainfo_ame_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/0.1.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/mediainfo-ame-service/aws/1.0.0/module.zip"
 
   prefix = "${var.global_prefix}-mediainfo-ame-service"
 
@@ -141,7 +141,7 @@ module "mediainfo_ame_service" {
 #########################
 
 module "ffmpeg_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/0.1.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/ffmpeg-service/aws/1.0.0/module.zip"
 
   prefix = "${var.global_prefix}-ffmpeg-service"
 
@@ -166,7 +166,7 @@ module "ffmpeg_service" {
 #########################
 
 module "aws_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/0.1.1/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/aws-ai-service/aws/1.0.0/module.zip"
 
   prefix = "${var.global_prefix}-aws-ai-service"
 
@@ -188,7 +188,7 @@ module "aws_ai_service" {
 #########################
 
 module "google_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/google-ai-service/aws/0.1.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/google-ai-service/aws/1.0.0/module.zip"
 
   prefix = "${var.global_prefix}-google-ai-service"
 
@@ -217,7 +217,7 @@ module "google_ai_service" {
 #########################
 
 module "azure_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/0.1.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/1.0.0/module.zip"
 
   prefix = "${var.global_prefix}-azure-ai-service"
 
@@ -241,7 +241,7 @@ module "azure_ai_service" {
 ########################################
 
 module "stepfunctions_workflow_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/0.1.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/step-functions-workflow-service/aws/1.0.0/module.zip"
 
   prefix = "${var.global_prefix}-sf-workflow-service"
 

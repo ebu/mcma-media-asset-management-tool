@@ -1,5 +1,5 @@
 def requiredVersionTerraform = "^1.1.4"
-def requiredVersionNodeJS = "^16.0.0"
+def requiredVersionNodeJS = "^18.0.0"
 def requiredVersionTsc = "^4.3.5"
 
 buildscript {
@@ -23,8 +23,6 @@ allprojects {
             terraformExecutable = ["terraform"]
             tscExecutable = ["ng"]
         }
-
-        awsAvailableLibraries = [".bin", "aws-sdk", "buffer", "dynamodb-doc", "events", "ieee754", "jmespath", "lodash", "punycode", "querystring", "url"]
     }
 }
 

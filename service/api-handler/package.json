@@ -4,22 +4,25 @@
     "private": true,
     "license": "Apache-2.0",
     "dependencies": {
-        "@mcma/api": "0.15.0",
-        "@mcma/aws-api-gateway": "0.15.0",
-        "@mcma/aws-client": "0.15.0",
-        "@mcma/aws-dynamodb": "0.15.0",
-        "@mcma/aws-lambda-worker-invoker": "0.15.0",
-        "@mcma/aws-logger": "0.15.0",
-        "@mcma/aws-s3": "0.15.0",
-        "@mcma/client": "0.15.0",
-        "@mcma/core": "0.15.0",
-        "@mcma/data": "0.15.0",
-        "@mcma/worker-invoker": "0.15.0",
-        "aws-sdk": "^2.1000.0",
-        "aws-xray-sdk": "^3.3.4"
+        "@aws-sdk/client-dynamodb": "^3.300.0",
+        "@aws-sdk/client-lambda": "^3.300.0",
+        "@aws-sdk/client-s3": "^3.300.0",
+        "@aws-sdk/s3-request-presigner": "^3.300.0",
+        "@mcma/api": "0.16.0",
+        "@mcma/aws-api-gateway": "0.16.0",
+        "@mcma/aws-client": "0.16.0",
+        "@mcma/aws-dynamodb": "0.16.0",
+        "@mcma/aws-lambda-worker-invoker": "0.16.0",
+        "@mcma/aws-logger": "0.16.0",
+        "@mcma/aws-s3": "0.16.0",
+        "@mcma/client": "0.16.0",
+        "@mcma/core": "0.16.0",
+        "@mcma/data": "0.16.0",
+        "@mcma/worker-invoker": "0.16.0",
+        "aws-xray-sdk": "^3.5.0"
     },
     "devDependencies": {
-        "@types/aws-lambda": "^8.10.72",
-        "@types/node": "^16.11.60"
+        "@types/aws-lambda": "^8.10.115",
+        "@types/node": "^18.15.10"
     }
 }

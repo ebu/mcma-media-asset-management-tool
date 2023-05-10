@@ -1,10 +1,13 @@
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+
 import { ProviderCollection, WorkerRequest } from "@mcma/worker";
-import { DataController } from "@local/data";
-import { MediaAsset, MediaAssetWorkflow, MediaEssence } from "@local/model";
-import { WorkerContext } from "../index";
-import { S3 } from "aws-sdk";
 import { S3Locator } from "@mcma/aws-s3";
 import { Logger } from "@mcma/core";
+
+import { MediaAsset, MediaAssetWorkflow, MediaEssence } from "@local/model";
+import { DataController } from "@local/data";
+
+import { WorkerContext } from "../index";
 
 export async function deleteAsset(providers: ProviderCollection, workerRequest: WorkerRequest, context: WorkerContext) {
     const logger = workerRequest.logger;
@@ -17,7 +20,7 @@ export async function deleteAsset(providers: ProviderCollection, workerRequest: 
     await deleteWorkflows(mediaAsset, dataController, logger);
 }
 
-async function deleteEssences(mediaAsset: MediaAsset, dataController: DataController, s3: S3, logger: Logger) {
+async function deleteEssences(mediaAsset: MediaAsset, dataController: DataController, s3Client: S3Client, logger: Logger) {
     let pageStartToken: string = undefined;
     do {
         const response = await dataController.query<MediaEssence>(`${mediaAsset.id}/essences`, 1000, pageStartToken);
@@ -29,10 +32,10 @@ async function deleteEssences(mediaAsset: MediaAsset, dataController: DataContro
                     const s3Locator = locator as S3Locator;
                     logger.info(`Deleting S3 Object '${s3Locator.key}' in bucket '${s3Locator.bucket}'`);
                     try {
-                        await s3.deleteObject({
+                        await s3Client.send(new DeleteObjectCommand({
                             Bucket: s3Locator.bucket,
                             Key: s3Locator.key,
-                        }).promise();
+                        }));
                     } catch (error) {
                         logger.warn(error);
                     }

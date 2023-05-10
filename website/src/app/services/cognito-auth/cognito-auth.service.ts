@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable, of, zip } from "rxjs";
 import { catchError, map, shareReplay, switchMap } from "rxjs/operators";
-import { fromPromise } from "rxjs/internal-compatibility";
-import { CognitoIdentityCredentials } from "aws-sdk";
 import { AuthenticationDetails, CognitoUser, CognitoUserPool, CognitoUserSession, ICognitoUserPoolData } from "amazon-cognito-identity-js";
+import { CognitoIdentityCredentials } from "@aws-sdk/credential-provider-cognito-identity";
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers"
+import { Provider } from "@aws-sdk/types";
 
 import { User } from "../../model";
 import { ConfigService } from "../../services/config";
@@ -34,7 +35,6 @@ export class CognitoAuthService {
 
   protected statusSubject: BehaviorSubject<AuthStatus>;
   protected user: User | null;
-  protected credentials: CognitoIdentityCredentials | null;
 
   private authAction: AuthAction;
 
@@ -45,7 +45,6 @@ export class CognitoAuthService {
     this.statusSubject = new BehaviorSubject<AuthStatus>(AuthStatus.NotAuthenticated);
     this.status$ = this.statusSubject.asObservable();
     this.user = null;
-    this.credentials = null;
 
     this.authAction = { type: CognitoAuthActionType.None };
     this.cognitoUserPool = null;
@@ -312,7 +311,7 @@ export class CognitoAuthService {
     );
   }
 
-  getCredentials(): Observable<CognitoIdentityCredentials> {
+  getCredentialsProvider(): Observable<Provider<CognitoIdentityCredentials>> {
     return zip(
       this.getCognitoUserPool(),
       this.getCurrentSession(),
@@ -320,16 +319,23 @@ export class CognitoAuthService {
       this.config.get<string>("AwsRegion")
     ).pipe(
       switchMap(([userPool, session, cognitoIdentityPoolId, region]) => {
-        const credentials = this.credentials = new CognitoIdentityCredentials({
-          IdentityPoolId: cognitoIdentityPoolId,
-          Logins: {
+        const credentialsProvider = fromCognitoIdentityPool({
+          clientConfig: { region },
+          identityPoolId: cognitoIdentityPoolId,
+          logins: {
             [`cognito-idp.${region}.amazonaws.com/${userPool.getUserPoolId()}`]: session.getIdToken().getJwtToken()
           }
-        }, { region });
+        });
 
-        return fromPromise(credentials.getPromise().then(() => credentials));
+        return of(credentialsProvider);
       })
     );
+  }
+
+  getCredentials(): Observable<CognitoIdentityCredentials> {
+    return this.getCredentialsProvider().pipe(
+      switchMap(credentialsProvider => credentialsProvider())
+    )
   }
 
   private getCognitoUserPool(): Observable<CognitoUserPool> {
@@ -388,8 +394,6 @@ export class CognitoAuthService {
 
   private onCognitoLogout(source: string) {
     this.logger.info(source);
-    this.credentials?.clearCachedId();
-    this.credentials = null;
     this.cognitoUser?.signOut();
     this.cognitoUser = null;
     this.user = null;

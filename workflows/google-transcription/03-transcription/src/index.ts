@@ -1,5 +1,8 @@
 import { Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetActivityTaskCommand, SFNClient } from "@aws-sdk/client-sfn";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import {
     AIJob, Job,
@@ -17,12 +20,11 @@ import { awsV4Auth } from "@mcma/aws-client";
 
 const { ACTIVITY_ARN } = process.env;
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
-const stepFunctions = new AWS.StepFunctions();
-const s3 = new AWS.S3({ signatureVersion: "v4" });
+const s3Client = AWSXRay.captureAWSv3Client(new S3Client({}));
+const sfnClient = AWSXRay.captureAWSv3Client(new SFNClient({}));
 
 const loggerProvider = new AwsCloudWatchLoggerProvider("google-transcription-03-transcription", getLogGroupName());
-const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth(AWS)));
+const resourceManager = new ResourceManager(getResourceManagerConfig(), new AuthProvider().add(awsV4Auth()));
 
 type InputEvent = {
     input: {
@@ -46,7 +48,7 @@ export async function handler(event: InputEvent, context: Context) {
         logger.debug(event);
         logger.debug(context);
 
-        const data = await stepFunctions.getActivityTask({ activityArn: ACTIVITY_ARN }).promise();
+        const data = await sfnClient.send(new GetActivityTaskCommand({ activityArn: ACTIVITY_ARN }));
         logger.info(data);
 
         const taskToken = data.taskToken;
@@ -72,11 +74,11 @@ export async function handler(event: InputEvent, context: Context) {
             inputFile = transformJob.jobOutput.outputFile
         } else {
             inputFile = event.input.inputFile;
-            inputFile.url = s3.getSignedUrl("getObject", {
+            const command = new GetObjectCommand({
                 Bucket: inputFile.bucket,
                 Key: inputFile.key,
-                Expires: 3600
             });
+            inputFile.url = await getSignedUrl(s3Client, command, { expiresIn: 12 * 3600 });
         }
         
         let job = new AIJob({

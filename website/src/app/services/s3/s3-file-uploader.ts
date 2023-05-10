@@ -1,9 +1,20 @@
 import * as mime from "mime-types";
-import { Request } from "aws-sdk";
+import { AbortController } from "@aws-sdk/abort-controller";
+import { HttpRequest } from "@aws-sdk/protocol-http";
+import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
+  PutObjectCommand,
+  ServiceOutputTypes,
+  UploadPartCommand
+} from "@aws-sdk/client-s3";
+import { EventEmitter } from "events";
+
 import { interval, Observable, Subscriber } from "rxjs";
 import { LoggerService } from "../../services";
 import { FileDescriptor, UploadStatus } from "../../model";
-import { S3Provider } from "./s3-provider";
+import { S3ClientProvider } from "./s3-client-provider";
 
 const MIN_MULTIPART_SIZE = 67108864; // 64 MB
 const MAX_NUMBER_PARTS = 10000;
@@ -45,8 +56,8 @@ interface WorkItem {
 
 interface ActiveWorkItem {
   workItem: WorkItem;
-  request: Request<any, any>;
-  promise: Promise<any>;
+  promise: Promise<ServiceOutputTypes>;
+  abortController: AbortController;
   result?: any;
   error?: any;
 }
@@ -71,7 +82,7 @@ export class S3FileUploader {
 
   constructor(public bucket: string,
               public identityId: string,
-              private s3Provider: S3Provider,
+              private s3ClientProvider: S3ClientProvider,
               private logger: LoggerService) {
   }
 
@@ -165,7 +176,7 @@ export class S3FileUploader {
     const abortWorkItems: WorkItem[] = [];
 
     for (const activeWorkItem of this.activeWorkItems) {
-      activeWorkItem?.request.abort();
+      activeWorkItem?.abortController.abort();
     }
 
     while (this.queuedWorkItems.length > 0) {
@@ -310,26 +321,53 @@ export class S3FileUploader {
       length: workItem.file.size,
       uploaded: 0,
     };
-
     workItem.singleData = singleData;
 
-    const s3 = await this.s3Provider.get();
+    const s3Client = await this.s3ClientProvider.get();
 
-    const request = s3.putObject({
-      Bucket: this.bucket,
-      Key: workItem.key,
-      Body: workItem.file,
-      ContentType: workItem.contentType
-    }).on("httpUploadProgress", (progress) => {
-      const diff = progress.loaded - singleData.uploaded;
-      singleData.uploaded = progress.loaded;
+    const requestHandler = s3Client.config.requestHandler;
+    const eventEmitter: EventEmitter | null = requestHandler instanceof EventEmitter ? requestHandler : null;
+
+    const uploadEventListener = (event: ProgressEvent, request: HttpRequest) => {
+      const key = decodeURIComponent(request.path).substring(1);
+
+      if (key !== workItem.key) {
+        // ignored, because the emitted event is not for this part.
+        return;
+      }
+
+      const diff = event.loaded - singleData.uploaded;
+      singleData.uploaded = event.loaded;
       this.uploadedBytes += diff;
+    };
+
+    if (eventEmitter !== null) {
+      // The requestHandler is the xhr-http-handler.
+      eventEmitter.on("xhr.upload.progress", uploadEventListener);
+    }
+
+    const abortController = new AbortController();
+
+    const promise = s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: workItem.key,
+        Body: workItem.file,
+        ContentType: workItem.contentType
+      }), {
+        abortSignal: abortController.signal
+      }
+    ).then(value => {
+      if (eventEmitter !== null) {
+        eventEmitter.off("xhr.upload.progress", uploadEventListener);
+      }
+      return value;
     });
 
     this.activeWorkItems.push({
       workItem,
-      request,
-      promise: request.promise(),
+      promise,
+      abortController
     });
   }
 
@@ -356,18 +394,24 @@ export class S3FileUploader {
   private async processWorkItemMultipartStart(workItem: WorkItem) {
     this.logger.info("processWorkItemMultipartStart - " + workItem.key);
 
-    const s3 = await this.s3Provider.get();
+    const s3Client = await this.s3ClientProvider.get();
 
-    const request = s3.createMultipartUpload({
-      Bucket: this.bucket,
-      Key: workItem.key,
-      ContentType: workItem.contentType,
-    });
+    const abortController = new AbortController();
+
+    const promise = s3Client.send(
+      new CreateMultipartUploadCommand({
+        Bucket: this.bucket,
+        Key: workItem.key,
+        ContentType: workItem.contentType,
+      }), {
+        abortSignal: abortController.signal
+      }
+    );
 
     this.activeWorkItems.push({
       workItem,
-      request,
-      promise: request.promise(),
+      promise,
+      abortController
     });
   }
 
@@ -453,25 +497,59 @@ export class S3FileUploader {
 
     this.logger.info(segment);
 
-    const s3 = await this.s3Provider.get();
+    const s3Client = await this.s3ClientProvider.get();
 
-    const request = s3.uploadPart({
-      Bucket: this.bucket,
-      Key: workItem.key,
-      PartNumber: segment.partNumber,
-      UploadId: uploadId,
-      ContentLength: segment.length,
-      Body: workItem.file.slice(segment.start, segment.end),
-    }).on("httpUploadProgress", (progress) => {
-      const diff = progress.loaded - segment.uploaded;
-      segment.uploaded = progress.loaded;
+    const requestHandler = s3Client.config.requestHandler;
+    const eventEmitter: EventEmitter | null = requestHandler instanceof EventEmitter ? requestHandler : null;
+
+    const uploadEventListener = (event: ProgressEvent, request: HttpRequest) => {
+      const key = decodeURIComponent(request.path).substring(1);
+
+      if (key !== workItem.key) {
+        // ignored, because the emitted event is not for this part.
+        return;
+      }
+
+      const partNumber = Number(request.query["partNumber"]) || -1;
+      if (partNumber !== segment.partNumber) {
+        // ignored, because the emitted event is not for this part.
+        return;
+      }
+
+      const diff = event.loaded - segment.uploaded;
+      segment.uploaded = event.loaded;
       this.uploadedBytes += diff;
+    };
+
+    if (eventEmitter !== null) {
+      // The requestHandler is the xhr-http-handler.
+      eventEmitter.on("xhr.upload.progress", uploadEventListener);
+    }
+
+    const abortController = new AbortController();
+
+    const promise = s3Client.send(
+      new UploadPartCommand({
+        Bucket: this.bucket,
+        Key: workItem.key,
+        PartNumber: segment.partNumber,
+        UploadId: uploadId,
+        ContentLength: segment.length,
+        Body: workItem.file.slice(segment.start, segment.end),
+      }), {
+        abortSignal: abortController.signal
+      }
+    ).then(value => {
+      if (eventEmitter !== null) {
+        eventEmitter.off("xhr.upload.progress", uploadEventListener);
+      }
+      return value;
     });
 
     this.activeWorkItems.push({
       workItem,
-      request,
-      promise: request.promise(),
+      promise,
+      abortController
     });
   }
 
@@ -515,26 +593,32 @@ export class S3FileUploader {
         this.process();
       }, 1000);
     } else {
-      const s3 = await this.s3Provider.get();
+      const s3Client = await this.s3ClientProvider.get();
 
-      const request = s3.completeMultipartUpload({
-        Bucket: this.bucket,
-        Key: workItem.key,
-        UploadId: uploadId,
-        MultipartUpload: {
-          Parts: segments.map(segment => {
-            return {
-              ETag: segment.etag,
-              PartNumber: segment.partNumber,
-            };
-          }).sort((a, b) => a.PartNumber - b.PartNumber)
+      const abortController = new AbortController();
+
+      const promise = s3Client.send(
+        new CompleteMultipartUploadCommand({
+          Bucket: this.bucket,
+          Key: workItem.key,
+          UploadId: uploadId,
+          MultipartUpload: {
+            Parts: segments.map(segment => {
+              return {
+                ETag: segment.etag,
+                PartNumber: segment.partNumber,
+              };
+            }).sort((a, b) => a.PartNumber - b.PartNumber)
+          }
+        }), {
+          abortSignal: abortController.signal
         }
-      });
+      );
 
       this.activeWorkItems.push({
         workItem,
-        request,
-        promise: request.promise(),
+        promise,
+        abortController,
       });
     }
   }
@@ -561,18 +645,24 @@ export class S3FileUploader {
       throw Error("Missing upload id");
     }
 
-    const s3 = await this.s3Provider.get();
+    const s3Client = await this.s3ClientProvider.get();
 
-    const request = s3.abortMultipartUpload({
-      Bucket: this.bucket,
-      Key: workItem.key,
-      UploadId: uploadId
-    });
+    const abortController = new AbortController();
+
+    const promise = s3Client.send(
+      new AbortMultipartUploadCommand({
+        Bucket: this.bucket,
+        Key: workItem.key,
+        UploadId: uploadId
+      }), {
+        abortSignal: abortController.signal
+      }
+    );
 
     this.activeWorkItems.push({
       workItem,
-      request,
-      promise: request.promise(),
+      promise,
+      abortController,
     });
   }
 

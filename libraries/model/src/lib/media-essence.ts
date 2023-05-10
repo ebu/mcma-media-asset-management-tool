@@ -34,32 +34,31 @@ export class MediaEssence extends McmaResource implements MediaEssenceProperties
             properties = typeOrProperties;
             typeOrProperties = "MediaEssence";
         }
-        super(<string>typeOrProperties, properties);
+        super(typeOrProperties as string, properties);
+
+        this.filename = properties.filename;
+        this.extension = properties.extension?.toLowerCase();
+        this.size = properties.size;
+        this.duration = properties.duration;
+        this.locators = [];
+        if (Array.isArray(properties.locators)) {
+            for (const locator of properties.locators) {
+                if (locator["@type"] === "S3Locator") {
+                    this.locators.push(new S3Locator(locator as S3LocatorProperties));
+                } else {
+                    this.locators.push(new Locator(locator));
+                }
+            }
+        }
+        this.tags = [];
+        if (Array.isArray(properties.tags)) {
+            this.tags.push(...properties.tags);
+        }
 
         Utils.checkProperty(this, "filename", "string", false);
         Utils.checkProperty(this, "extension", "string", false);
         Utils.checkProperty(this, "size", "number", false);
         Utils.checkProperty(this, "duration", "number", false);
-
-        if (this.extension) {
-            this.extension = this.extension.toLowerCase();
-        }
-
-        if (!Array.isArray(this.locators)) {
-            this.locators = [];
-        }
-
-        this.locators = this.locators.map(locator => {
-            if (locator["@type"] === "S3Locator") {
-                return new S3Locator(locator as S3LocatorProperties);
-            } else {
-                return locator;
-            }
-        });
-
-        if (!Array.isArray(this.tags)) {
-            this.tags = [];
-        }
     }
 }
 

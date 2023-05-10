@@ -116,12 +116,12 @@ resource "aws_iam_role_policy" "step_04_register_output" {
 }
 
 resource "aws_lambda_function" "step_04_register_output" {
-  filename         = "${path.module}/04-register-output/build/dist/lambda.zip"
   function_name    = format("%.64s", "${var.prefix}-04-register-output")
   role             = aws_iam_role.step_04_register_output.arn
   handler          = "index.handler"
+  filename         = "${path.module}/04-register-output/build/dist/lambda.zip"
   source_code_hash = filebase64sha256("${path.module}/04-register-output/build/dist/lambda.zip")
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   timeout          = "900"
   memory_size      = "2048"
 

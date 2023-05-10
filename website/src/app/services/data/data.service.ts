@@ -28,21 +28,13 @@ export class DataService {
       this.config.get<string>("WebSocketUrl"),
       zip(
         this.config.get<string>("AwsRegion"),
-        this.auth.getCredentials(),
+        this.auth.getCredentialsProvider(),
       ).pipe(
-        map(([region, credentials]) => {
-          return {
-            accessKey: credentials.accessKeyId,
-            secretKey: credentials.secretAccessKey,
-            sessionToken: credentials.sessionToken,
-            region,
-          };
-        }),
-        map((credentials) => new AwsV4PresignedUrlGenerator(credentials)),
+        map(([ region, credentials ]) => new AwsV4PresignedUrlGenerator({ credentials, region })),
       )
     ).pipe(
       tap(() => this.logger.info("Connecting Websocket")),
-      map(([url, presignedUrlGenerator]) => presignedUrlGenerator.generatePresignedUrl("GET", url)),
+      switchMap(([url, presignedUrlGenerator]) => presignedUrlGenerator.generatePresignedUrl("GET", url)),
       switchMap(url => webSocket(url)),
       retry(),
       map(obj => obj as DataUpdate<McmaResource>),

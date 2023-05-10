@@ -1,15 +1,22 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import * as AWSXRay from "aws-xray-sdk-core";
+import { CloudWatchEventsClient } from "@aws-sdk/client-cloudwatch-events";
+import { CloudWatchLogsClient } from "@aws-sdk/client-cloudwatch-logs";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 import { AwsCloudWatchLoggerProvider, getLogGroupName } from "@mcma/aws-logger";
 import { DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 
+import { enableEventRule } from "@local/data";
+
 const { CLOUD_WATCH_EVENT_RULE, MCMA_TABLE_NAME } = process.env;
 
-const AWS = AWSXRay.captureAWS(require("aws-sdk"));
+const cloudWatchEventsClient = AWSXRay.captureAWSv3Client(new CloudWatchEventsClient({}));
+const cloudWatchLogsClient = AWSXRay.captureAWSv3Client(new CloudWatchLogsClient({}));
+const dynamoDBClient = AWSXRay.captureAWSv3Client(new DynamoDBClient({}));
 
-const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-handler", getLogGroupName(), new AWS.CloudWatchLogs());
-const dbTableProvider = new DynamoDbTableProvider({}, new AWS.DynamoDB());
+const loggerProvider = new AwsCloudWatchLoggerProvider("mam-service-websocket-handler", getLogGroupName(), cloudWatchLogsClient);
+const dbTableProvider = new DynamoDbTableProvider({}, dynamoDBClient);
 
 export async function handler(event: APIGatewayProxyEvent, context: Context) {
     console.log(JSON.stringify(event, null, 2));
@@ -27,8 +34,7 @@ export async function handler(event: APIGatewayProxyEvent, context: Context) {
             case "$connect":
                 await table.put("/connections/" + event.requestContext.connectionId, event.requestContext);
 
-                const cloudWatchEvents = new AWS.CloudWatchEvents();
-                await cloudWatchEvents.enableRule({ Name: CLOUD_WATCH_EVENT_RULE }).promise();
+                await enableEventRule(CLOUD_WATCH_EVENT_RULE, table, cloudWatchEventsClient, context.awsRequestId, logger);
                 break;
             case "$disconnect":
                 await table.delete("/connections/" + event.requestContext.connectionId);

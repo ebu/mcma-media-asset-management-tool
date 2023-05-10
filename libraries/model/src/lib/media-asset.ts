@@ -16,6 +16,11 @@ export class MediaAsset extends McmaResource implements MediaAssetProperties {
     constructor(properties: MediaAssetProperties) {
         super("MediaAsset", properties);
 
+        this.title = properties.title;
+        this.description = properties.description;
+        this.thumbnailUrl = properties.thumbnailUrl;
+        this.videoUrl = properties.videoUrl;
+
         Utils.checkProperty(this, "title", "string", true);
         Utils.checkProperty(this, "description", "string", true);
         Utils.checkProperty(this, "thumbnailUrl", "string", false);

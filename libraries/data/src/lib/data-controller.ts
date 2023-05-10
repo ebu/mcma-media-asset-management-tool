@@ -1,11 +1,11 @@
 import { DocumentDatabaseMutex, DocumentDatabaseTable, MutexProperties, QueryResults } from "@mcma/data";
-import { DynamoDB } from "aws-sdk";
 import { v4 as uuidv4 } from "uuid";
 
 import { McmaResourceProperties } from "@mcma/core";
 import { DynamoDbTableOptions, DynamoDbTableProvider } from "@mcma/aws-dynamodb";
 
 import { MediaAssetProperties, MediaAssetWorkflowProperties, MediaEssenceProperties, MediaWorkflowProperties } from "@local/model";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 export function getDynamoDbOptions(consistentRead: boolean): DynamoDbTableOptions {
     return {
@@ -21,8 +21,8 @@ export class DataController {
     private dbTableProvider: DynamoDbTableProvider;
     private dbTable: DocumentDatabaseTable;
 
-    constructor(private tableName: string, private publicUrl: string, consistentRead: boolean, dynamoDB: DynamoDB) {
-        this.dbTableProvider = new DynamoDbTableProvider(getDynamoDbOptions(consistentRead), dynamoDB);
+    constructor(private tableName: string, private publicUrl: string, consistentRead: boolean, dynamoDBClient: DynamoDBClient) {
+        this.dbTableProvider = new DynamoDbTableProvider(getDynamoDbOptions(consistentRead), dynamoDBClient);
     }
 
     private async init() {

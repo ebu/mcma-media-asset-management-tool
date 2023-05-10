@@ -1,11 +1,10 @@
 import { Component, EventEmitter, Input, NgZone, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from "@angular/core";
+import { LabelDetection, GetLabelDetectionResponse, Label } from "@aws-sdk/client-rekognition";
 
 import { MediaAssetWorkflow, MediaEssence } from "@local/model";
 import { DataService, DrawHandler, LoggerService, VideoService } from "../../services";
 import { from, Subscription } from "rxjs";
 import { mergeMap, switchMap } from "rxjs/operators";
-import { GetLabelDetectionResponse, LabelDetection } from "aws-sdk/clients/rekognition";
-import { Rekognition } from "aws-sdk";
 import { SelectionModel } from "@angular/cdk/collections";
 import { binarySearch, drawLabeledBox, getColor } from "../utils";
 
@@ -164,8 +163,8 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
     this.isLoadingEvent.emit(value);
   }
 
-  private updateLabelStatistics(visibleLabels: Rekognition.Label[]) {
-    const map = new Map<string, Rekognition.Label>();
+  private updateLabelStatistics(visibleLabels: Label[]) {
+    const map = new Map<string, Label>();
 
     for (const label of visibleLabels) {
       map.set(label.Name!, label);
@@ -212,8 +211,8 @@ export class AwsLabelDetectionComponent implements OnInit, OnChanges, OnDestroy 
     });
   }
 
-  private findLabelsAtTime(timestamp: number): Rekognition.Label[] {
-    const labels: Rekognition.Label[] = [];
+  private findLabelsAtTime(timestamp: number): Label[] {
+    const labels: Label[] = [];
 
     for (const labelId of this.labelData.keys()) {
       const labelDataArr = this.labelData.get(labelId);
