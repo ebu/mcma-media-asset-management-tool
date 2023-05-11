@@ -34,7 +34,7 @@
         "@mcma/client": "0.16.0",
         "@mcma/core": "0.16.0",
         "@mcma/data": "0.16.0",
-        "amazon-cognito-identity-js": "4.6.0",
+        "amazon-cognito-identity-js": "^6.2.0",
         "chart.js": "^3.7.1",
         "chartjs-plugin-datalabels": "^2.0.0",
         "crypto-browserify": "^3.12.0",
