@@ -217,7 +217,7 @@ module "google_ai_service" {
 #########################
 
 module "azure_ai_service" {
-  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/1.0.0/module.zip"
+  source = "https://ch-ebu-mcma-module-repository.s3.eu-central-1.amazonaws.com/ebu/azure-ai-service/aws/1.0.1/module.zip"
 
   prefix = "${var.global_prefix}-azure-ai-service"
 
